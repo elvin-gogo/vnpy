@@ -11,7 +11,7 @@ from vnpy.trader.app.arbitrageStrategy.arbitrageBacktesting import BacktestingEn
 
 
 if __name__ == '__main__':
-    from vnpy.trader.app.arbitrageStrategy.strategy.strategyKingKeltner import KkStrategy
+    from vnpy.trader.app.arbitrageStrategy.strategy.arbitrage import Arbitrage
     
     # 创建回测引擎
     engine = BacktestingEngine()
@@ -20,7 +20,8 @@ if __name__ == '__main__':
     engine.setBacktestingMode(engine.TICK_MODE)
 
     # 设置回测用的数据起始日期
-    engine.setStartDate('20120101')
+    engine.setStartDate('20181001')
+    engine.setEndDate('20181008')
     
     # 设置产品相关参数
     #engine.setSlippage(0.2)     # 不设置滑点
@@ -29,11 +30,17 @@ if __name__ == '__main__':
 
     # 设置使用的历史数据库
     symbols = ['binance/btc.usdt','huobip/btc.usdt','okex/btc.usdt']
-    engine.setDatabase(MINUTE_DB_NAME, symbols)
+    engine.setDatabase('depth', symbols)
     
     # 在引擎中创建策略对象
-    d = {}
-    engine.initStrategy(KkStrategy, d)
+    d = {
+        'p1Exchange':['binance','huobip','okex'],
+        'p2Exchange':['binance','huobip','okex'],
+        'p1Symbol':'btc.usdt',
+        'p2Symbol':'btc.usdt',
+        'spreadRatio':0.005
+    }
+    engine.initStrategy(Arbitrage, d)
     
     # 开始跑回测
     engine.runBacktesting()

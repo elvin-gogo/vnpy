@@ -1,4 +1,4 @@
-# encoding: UTF-8
+# coding=utf-8
 import requests
 import json
 import multiprocessing.dummy as thread
@@ -6,49 +6,58 @@ import gzip
 from pymongo import MongoClient
 import os
 import time
-import datetime
 import math
 from tqdm import tqdm
 import utils.logger as logger
+import arrow
+from settings import settings
 
 log = logger.getLog()
 
 base = ['cmt','btc','eth','eos','ltc','kcash','xrp']
 quote = ['eth','usd','usdt','btc']
 exchange = ['binance','okex','huobip','bitmex','bitfinex']
-symbolsRemain = []
 
 url = 'http://alihz-net-0.qbtrade.org'
-conn = MongoClient('18.179.204.45',23377)
-db = conn.admin
-db.authenticate('testCoin','testCoin123456')
-db = conn.depth
+dbClient = MongoClient(settings['mongoHost'],settings['mongoPort'])
+if settings.get("mongoAuth"):
+    dbClient['admin'].authenticate(settings['mongoAuth']['authName'],settings['mongoAuth']['authPass'])
+db =dbClient['depth']
 downIndex = 0
 dbIndex = 0
 
 def downloadFile(url, filename):
-    log.info('downloading file: %s'%filename)
     global downIndex
     downIndex+=1
-    block_size = 1024
-    r = requests.get(url, stream=True,headers={'Accept-Encoding': None})
-    total_size = int(r.headers.get('content-length', 0))
-    if total_size<block_size: return 0
-    #print('file %s with size: %d', filename, total_size)
-    wrote = 0
-    progress = 0.1
-    with open(filename, 'wb') as f:
-        for data in tqdm(r.iter_content(block_size),desc='down:'+filename,total=math.ceil(total_size // block_size), unit='KB',
-                         unit_scale=True,dynamic_ncols=True,position=downIndex):
-            wrote = wrote + len(data)
-            f.write(data)
-            if wrote/total_size>progress:
-                progress+=0.1
-                log.info('downloading file %s progress %.f%%'%(filename,wrote/total_size*100))
-    if total_size != 0 and wrote != total_size:
-        log.error("ERROR, something went wrong, download again")
-        return downloadFile(url, filename)
-    return total_size
+    log.info('downloading url: %s, index: %d' % (url,downIndex))
+    try:
+        block_size = 1024
+        for i in range(0,10):
+            r = requests.get(url, stream=True, headers={'Accept-Encoding': None})
+            if r.status_code == 200:
+                break
+            log.error('%s response error %s, waiting for try again...'%(url,r.status_code))
+            time.sleep(30)
+        total_size = int(r.headers.get('content-length', 0))
+        if total_size<block_size:
+            return 0
+        #print('file %s with size: %d', filename, total_size)
+        wrote = 0
+        progress = 0.1
+        with open(filename, 'wb') as f:
+            for data in tqdm(r.iter_content(block_size),desc='down:'+filename,total=math.ceil(total_size // block_size), unit='KB',
+                             unit_scale=True,dynamic_ncols=True,position=downIndex):
+                wrote = wrote + len(data)
+                f.write(data)
+                if wrote/total_size>progress:
+                    progress+=0.1
+                    log.info('downloading file %s progress %.f%%'%(filename,wrote/total_size*100))
+        if total_size != 0 and wrote != total_size:
+            log.error("ERROR, something went wrong, download again")
+            return downloadFile(url, filename)
+        return total_size
+    except Exception as e:
+        log.error('exception in downloadFile: %s',e)
 
 def storeDB(contract):
     start = time.time()
@@ -66,7 +75,16 @@ def storeDB(contract):
     pt = tqdm(desc='db:'+contract,total=total,position=dbIndex)
     for line in lines:
         j = json.loads(str(line.decode('utf-8')))
-        j['_id']=j['exchange_time']
+        exTime = j.get('exchange_time')
+        if exTime == None:
+            exTime = j.get('time')
+            if exTime == None:
+                log.error('error data: %s', j)
+                continue
+            else:
+                j['exchange_time'] = exTime
+        exTime = arrow.get(exTime)
+        j['_id']=exTime.timestamp
         col.save(j)
         stored += 1
         pt.update()
@@ -77,18 +95,15 @@ def storeDB(contract):
     os.remove(filename)
     spent = time.time()-start
     log.info("%s处理完成，耗时%s秒"%(contract,str(spent)))
-    log.info("symbols remaining: %s", symbolsRemain)
 
 def downToDB(param):
     start = time.time()
     filename='%s.zip'%param['contract'].replace('/','-')
     log.info('downloading %s: '%filename)
     before = time.time()
-    global symbolsRemain
-    symbolsRemain.remove(param['contract'])
     total = downloadFile(url+'/hist-ticks?date=%s&contract=%s'%(param['date'],param['contract'])+'&format=json',filename)
     if total==0:
-        log.info('%s has no data!'%filename)
+        log.info('%s has no data!'%(url+'/hist-ticks?date=%s&contract=%s'%(param['date'],param['contract'])+'&format=json'))
         return
     log.info('downloaded %s with %.2s seconds'%(filename,float(time.time()-before)))
     p = thread.Process(target=storeDB,args=(param['contract'],))
@@ -122,24 +137,20 @@ def getSymbol(allSymbol):
     return ret
 
 if __name__ == '__main__':
-    global symbolsRemain
-    today=datetime.date.today()
-    oneday=datetime.timedelta(days=1)
-    yesterday=today
-    for i in range(0,10):
+    today=arrow.get(arrow.now().date().today())
+    for i in range(10,0,-1):
         before = time.time()
-        yesterday=yesterday-oneday
+        yesterday=str(today.shift(days=-1*i).date())
         log.info('downloading symbols:')
         response = requests.get(url+ '/contracts?date=%s&format=json'%yesterday)
         j = response.json()
         symbols = getSymbol(j)
-        symbolsRemain = symbols.copy()
         log.info('total symbols: %d, matched symbols: %d'%(len(j),len(symbols)))
         for s in range(0,len(symbols)):
             symbols[s]={'contract':symbols[s],'date':str(yesterday)}
-        downPool=thread.Pool(10)
+        #最大只能同时请求4个
+        downPool=thread.Pool(4)
         res = downPool.map(downToDB, symbols)
         log.info(res)
         log.info("日期%s所有数据处理完成，总耗时%.2f秒" % (yesterday, float(time.time()-before)))
-
 

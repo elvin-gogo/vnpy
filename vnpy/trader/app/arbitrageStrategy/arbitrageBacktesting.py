@@ -19,7 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from vnpy.rpc import RpcClient, RpcServer, RemoteException
-
+from settings import  settings
+import arrow
 
 # 如果安装了seaborn则设置为白色风格
 try:
@@ -28,7 +29,6 @@ try:
 except ImportError:
     pass
 
-from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtOrderData, VtTradeData
@@ -154,7 +154,7 @@ class BacktestingEngine(object):
     def setDatabase(self, dbName, symbol):
         """设置历史数据所用的数据库"""
         self.dbName = dbName
-        self.symbol = symbol
+        self.symbols = symbol
     
     #----------------------------------------------------------------------
     def setCapital(self, capital):
@@ -195,14 +195,16 @@ class BacktestingEngine(object):
         self.hdsClient.start()
     
     #----------------------------------------------------------------------
-    def loadHistoryData(self):
+    def load1TokenHistoryData(self):
         """载入历史数据"""
-        self.dbClient = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
+        dbClient = pymongo.MongoClient(settings['mongoHost'], settings['mongoPort'])
+        if settings.get("mongoAuth"):
+            dbClient['admin'].authenticate(settings['mongoAuth']['authName'], settings['mongoAuth']['authPass'])
         for i in range(0,len(self.symbols)):
             symbol = self.symbols[i]
-            collection = self.dbClient[self.dbName][symbol]
+            collection = dbClient[self.dbName][symbol]
 
-            self.output(u'开始载入数据')
+            self.output(u'开始载入 %s 数据'%symbol)
 
             # 首先根据回测模式，确认要使用的数据类
             if self.mode == self.BAR_MODE:
@@ -213,15 +215,11 @@ class BacktestingEngine(object):
                 func = self.newTick
 
             # 载入初始化需要用的数据
-            if self.hdsClient:
-                initCursor = self.hdsClient.loadHistoryData(self.dbName,
-                                                            symbol,
-                                                            self.dataStartDate,
-                                                            self.strategyStartDate)
-            else:
-                flt = {'datetime':{'$gte':self.dataStartDate,
-                                   '$lt':self.strategyStartDate}}
-                initCursor = collection.find(flt).sort('datetime')
+            idStart = arrow.get(self.dataStartDate).timestamp
+            idEnd = arrow.get(self.strategyStartDate).timestamp
+            flt = {'_id':{'$gte':idStart,
+                               '$lt':idEnd}}
+            initCursor = collection.find(flt).sort('id')
 
             # 将数据从查询指针中读取出，并生成列表
             self.initData[symbol] = []              # 清空initData列表
@@ -231,18 +229,12 @@ class BacktestingEngine(object):
                 self.initData[symbol].append(data)
 
             # 载入回测数据
-            if self.hdsClient:
-                self.dbCursor[symbol] = self.hdsClient.loadHistoryData(self.dbName,
-                                                               symbol,
-                                                               self.strategyStartDate,
-                                                               self.dataEndDate)
+            if not self.dataEndDate:
+                flt = {'exchange_time':{'$gte':self.strategyStartDate}}   # 数据过滤条件
             else:
-                if not self.dataEndDate:
-                    flt = {'datetime':{'$gte':self.strategyStartDate}}   # 数据过滤条件
-                else:
-                    flt = {'datetime':{'$gte':self.strategyStartDate,
-                                       '$lte':self.dataEndDate}}
-                self.dbCursor[symbol] = collection.find(flt).sort('datetime')
+                flt = {'exchange_time':{'$gte':self.strategyStartDate,
+                                   '$lte':self.dataEndDate}}
+            self.dbCursor[symbol] = collection.find(flt).sort('exchange_time')
 
             if isinstance(self.dbCursor[symbol], list):
                 count = len(initCursor) + len(self.dbCursor[symbol])
@@ -254,7 +246,7 @@ class BacktestingEngine(object):
     def runBacktesting(self):
         """运行回测"""
         # 载入历史数据
-        self.loadHistoryData()
+        self.load1TokenHistoryData()
         
         # 首先根据回测模式，确认要使用的数据类
         dataClass = VtTickData
@@ -276,24 +268,26 @@ class BacktestingEngine(object):
         curIndex = {}
         first = None
         firstSymbol = None
-        symbols = self.symbols[:]
-        for symbol in symbols:
-            if not curIndex[symbol]:
-                curIndex[symbol] = 0
-            if curIndex[symbol]>=len(self.dbCursor[symbol]):
-                symbols.remove(symbol)
-                lastData[symbol]=
-            lastData[symbol] = self.dbCursor[symbol][curIndex]
-            first = lastData[symbol]
-        #排序，取出时间最早的
-        for s in lastData:
-            if s['exchange_time']<first['exchange_time']:
-                first = lastData[s]
-                firstSymbol = s
-        curIndex[firstSymbol]+=1
-        data = dataClass()
-        data.__dict__ = first
-        func(data)
+        symbolsRemained = []#self.symbols[:]
+        while True:
+            for symbol in self.symbols:
+                if curIndex.get(symbol)==None:
+                    curIndex[symbol] = 0
+                if curIndex[symbol]<len(self.dbCursor[symbol]):
+                    symbolsRemained.append(symbol)
+            if len(symbolsRemained)==0: break
+            for symbol in symbolsRemained:
+                lastData[symbol] = self.dbCursor[symbol][curIndex[symbol]]
+                first = lastData[symbol]
+            #排序，取出时间最早的
+            for s in lastData:
+                if s['exchange_time']<first['exchange_time']:
+                    first = lastData[s]
+                    firstSymbol = s
+            curIndex[firstSymbol]+=1
+            data = dataClass()
+            data.__dict__ = first
+            func(data)
             
         self.output(u'数据回放结束')
         
@@ -963,7 +957,7 @@ class BacktestingEngine(object):
                                                  targetName, self.mode, 
                                                  self.startDate, self.initDays, self.endDate,
                                                  self.slippage, self.rate, self.size, self.priceTick,
-                                                 self.dbName, self.symbol)))
+                                                 self.dbName, self.symbols)))
         pool.close()
         pool.join()
         
@@ -1318,9 +1312,9 @@ class HistoryDataServer(RpcServer):
         """Constructor"""
         super(HistoryDataServer, self).__init__(repAddress, pubAddress)
         
-        self.dbClient = pymongo.MongoClient(globalSetting['mongoHost'], 
-                                            globalSetting['mongoPort'])
-        
+        self.dbClient = pymongo.MongoClient(settings['mongoHost'],
+                                            settings['mongoPort'])
+
         self.historyDict = {}
         
         self.register(self.loadHistoryData)
