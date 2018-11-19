@@ -219,7 +219,7 @@ class BacktestingEngine(object):
             idEnd = arrow.get(self.strategyStartDate).timestamp
             flt = {'_id':{'$gte':idStart,
                                '$lt':idEnd}}
-            initCursor = collection.find(flt).sort('id')
+            initCursor = collection.find(flt).sort('_id')
 
             # 将数据从查询指针中读取出，并生成列表
             self.initData[symbol] = []              # 清空initData列表
