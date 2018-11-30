@@ -7,7 +7,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from collections import OrderedDict
 from itertools import product
 import multiprocessing
@@ -16,7 +16,6 @@ import copy
 import pymongo
 import numpy as np
 import matplotlib.pyplot as plt
-
 from vnpy.rpc import RpcClient, RpcServer, RemoteException
 
 
@@ -33,7 +32,19 @@ from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 
 from .ctaBase import *
+import json
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
+class CJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, date):
+            return obj.strftime("%Y-%m-%d")
+        else:
+            return json.JSONEncoder.default(self, obj)
 
 ########################################################################
 class BacktestingEngine(object):
@@ -312,6 +323,7 @@ class BacktestingEngine(object):
         """
         self.strategy = strategyClass(self, setting)
         self.strategy.name = self.strategy.className
+        self.strategy.vtSymbol = self.symbol
     
     #----------------------------------------------------------------------
     def crossLimitOrder(self):
@@ -357,7 +369,7 @@ class BacktestingEngine(object):
                 trade.vtOrderID = order.orderID
                 trade.direction = order.direction
                 trade.offset = order.offset
-                
+
                 # 以买入为例：
                 # 1. 假设当根K线的OHLC分别为：100, 125, 90, 110
                 # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
@@ -593,6 +605,27 @@ class BacktestingEngine(object):
         for stopOrderID in list(self.workingStopOrderDict.keys()):
             self.cancelStopOrder(stopOrderID)
 
+    #------------------------------------------------
+    # 交易写入文件
+    #------------------------------------------------
+    def tradeToFile(self):
+        tradePath = "./trade.csv"
+        import csv
+        import codecs
+        fieldnames = ['dt','symbol', 'exchange', 'vtSymbol', 'tradeID', 'vtTradeID', 'orderID', 'vtOrderID',
+                      'direction','offset','price','volume','tradeTime',"gatewayName","rawData","profit","margin"]
+        with codecs.open(tradePath, 'wb', 'utf-8') as tradeFile:
+            tradeFile.write(codecs.BOM_UTF8)
+            dictWriter = csv.DictWriter(tradeFile, fieldnames=fieldnames)
+            dictWriter.writeheader()
+            for trade in self.tradeDict.values():
+                # dicta=trade.__dict__
+                # j=json.dumps(dicta,cls=CJsonEncoder)
+                # dict2=j.decode("unicode-escape")
+                # dict3=json.loads(dict2)
+                # dictWriter.writerow(dict3)
+                dictWriter.writerow(trade.__dict__)
+
     #----------------------------------------------------------------------
     def saveSyncData(self, strategy):
         """保存同步数据（无效）"""
@@ -627,6 +660,8 @@ class BacktestingEngine(object):
         
         tradeTimeList = []          # 每笔成交时间戳
         posList = [0]               # 每笔成交后的持仓情况        
+
+        self.tradeToFile()
 
         for trade in self.tradeDict.values():
             # 复制成交对象，因为下面的开平仓交易配对涉及到对成交数量的修改
@@ -843,36 +878,36 @@ class BacktestingEngine(object):
         self.output(u'盈利交易平均值\t%s' %formatNumber(d['averageWinning']))
         self.output(u'亏损交易平均值\t%s' %formatNumber(d['averageLosing']))
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
-    
+        return d
         # 绘图
-        fig = plt.figure(figsize=(10, 16))
-        
-        pCapital = plt.subplot(4, 1, 1)
-        pCapital.set_ylabel("capital")
-        pCapital.plot(d['capitalList'], color='r', lw=0.8)
-        
-        pDD = plt.subplot(4, 1, 2)
-        pDD.set_ylabel("DD")
-        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
-        
-        pPnl = plt.subplot(4, 1, 3)
-        pPnl.set_ylabel("pnl")
-        pPnl.hist(d['pnlList'], bins=50, color='c')
-
-        pPos = plt.subplot(4, 1, 4)
-        pPos.set_ylabel("Position")
-        if d['posList'][-1] == 0:
-            del d['posList'][-1]
-        tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
-        xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
-        tradeTimeIndex = list(map(lambda i: tradeTimeIndex[i], xindex))
-        pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
-        pPos.set_ylim(-1.2, 1.2)
-        plt.sca(pPos)
-        plt.tight_layout()
-        plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
-        
-        plt.show()
+        # fig = plt.figure(figsize=(10, 16))
+        #
+        # pCapital = plt.subplot(4, 1, 1)
+        # pCapital.set_ylabel("capital")
+        # pCapital.plot(d['capitalList'], color='r', lw=0.8)
+        #
+        # pDD = plt.subplot(4, 1, 2)
+        # pDD.set_ylabel("DD")
+        # pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
+        #
+        # pPnl = plt.subplot(4, 1, 3)
+        # pPnl.set_ylabel("pnl")
+        # pPnl.hist(d['pnlList'], bins=50, color='c')
+        #
+        # pPos = plt.subplot(4, 1, 4)
+        # pPos.set_ylabel("Position")
+        # if d['posList'][-1] == 0:
+        #     del d['posList'][-1]
+        # tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
+        # xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
+        # tradeTimeIndex = list(map(lambda i: tradeTimeIndex[i], xindex))
+        # pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
+        # pPos.set_ylim(-1.2, 1.2)
+        # plt.sca(pPos)
+        # plt.tight_layout()
+        # plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
+        #
+        # plt.show()
     
     #----------------------------------------------------------------------
     def clearBacktestingResult(self):
@@ -1160,7 +1195,7 @@ class BacktestingEngine(object):
         plt.hist(d['netPnl'], bins=50)
         
         plt.show()
-    
+
 
 ########################################################################
 class TradingResult(object):

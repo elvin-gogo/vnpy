@@ -5,17 +5,17 @@
 """
 
 from __future__ import division
-
-
-from vnpy.trader.app.arbitrageStrategy.arbitrageBacktesting import BacktestingEngine, MINUTE_DB_NAME
-
+from datetime import datetime
+from portfolioEngine import BacktestingEngine
 
 if __name__ == '__main__':
     from vnpy.trader.app.arbitrageStrategy.strategy.arbitrage import Arbitrage
-    
+
     # 创建回测引擎
-    engine = BacktestingEngine()
-    
+    engine=BacktestingEngine()
+    engine.setPeriod(datetime(2018,10,1),datetime(2018,10,8))
+    engine.initPortfolio('test.csv',10000000)
+
     # 设置引擎的回测模式为K线
     engine.setBacktestingMode(engine.TICK_MODE)
 

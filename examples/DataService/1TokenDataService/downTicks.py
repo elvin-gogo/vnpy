@@ -8,9 +8,9 @@ import os
 import time
 import math
 from tqdm import tqdm
-import utils.logger as logger
+import vnpy.trader.app.arbitrageStrategy.utils.logger as logger
 import arrow
-from settings import settings
+from vnpy.trader.app.arbitrageStrategy.settings import settings
 
 log = logger.getLog()
 
