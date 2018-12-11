@@ -190,7 +190,8 @@ class ArbitrageWidget(AlgoWidget):
         self.lineVolume = QtWidgets.QLineEdit()
         self.lineVolume.setValidator(validator)
         
-        intValidator = QtGui.QIntValidator()
+        # intValidator = QtGui.QIntValidator()
+        intValidator = QtGui.QDoubleValidator()
         intValidator.setBottom(10)
         self.lineInterval = QtWidgets.QLineEdit()
         self.lineInterval.setValidator(intValidator)

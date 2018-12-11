@@ -152,8 +152,9 @@ class IcebergWidget(AlgoWidget):
         doubleValidator = QtGui.QDoubleValidator()
         doubleValidator.setBottom(0)
         
-        intValidator = QtGui.QIntValidator()
-        intValidator.setBottom(1)        
+        # intValidator = QtGui.QIntValidator()
+        intValidator = QtGui.QDoubleValidator()
+        intValidator.setBottom(1)
         
         self.linePrice = QtWidgets.QLineEdit()
         self.linePrice.setValidator(doubleValidator)
