@@ -279,6 +279,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
         # 设为表头拉伸
         self.horizontalHeader().setResizeMode(self.resizeMode)
         # self.horizontalHeader().setSectionResizeMode(self.resizeMode)
+        # setSectionResizeMode    是qt5的写法
 
     #----------------------------------------------------------------------
     def registerEvent(self):
