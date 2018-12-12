@@ -7,7 +7,7 @@ except NameError:  # Python 3
     from importlib import reload
 import sys
 reload(sys)
-sys.setdefaultencoding('utf8')
+# sys.setdefaultencoding('utf8')
 
 # vn.trader模块
 from vnpy.event import EventEngine
@@ -19,13 +19,15 @@ from vnpy.trader.gateway import (huobiGateway, okexGateway, okexfGateway,
                                  binanceGateway, bitfinexGateway,
                                  bitmexGateway, fcoinGateway,
                                  bigoneGateway, lbankGateway,
-                                 coinbaseGateway, ccxtGateway)
+                                 coinbaseGateway, ccxtGateway, test_bitmexGateway)
 
 # 加载上层应用
 from vnpy.trader.app import (algoTrading)
 
 # 当前目录组件
-from uiCryptoWindow import MainWindow
+from examples.CryptoTrader.uiCryptoWindow import MainWindow
+
+# from uiCryptoWindow import MainWindow
 
 #----------------------------------------------------------------------
 def main():
@@ -47,14 +49,15 @@ def main():
     me.addGateway(bigoneGateway)
     me.addGateway(fcoinGateway)
     me.addGateway(bitmexGateway)
+    me.addGateway(test_bitmexGateway)
     me.addGateway(huobiGateway)
     me.addGateway(okexGateway)
     me.addGateway(binanceGateway)
     me.addGateway(bitfinexGateway)
-    
+
     # 添加上层应用
     me.addApp(algoTrading)
-    
+
     # 创建主窗口
     mw = MainWindow(me, ee)
     mw.showMaximized()
