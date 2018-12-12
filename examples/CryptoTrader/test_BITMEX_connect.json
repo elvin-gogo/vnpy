@@ -1,0 +1,7 @@
+{
+	"testnet": true,
+	"apiKey": "2QE5SWOzwprP-AFWKeKvA60_",
+	"apiSecret": "FCva9WkqzeT9rdbpyEFDKmC6NxnqiTRQMc-EWXwraC4Oh5FG",
+	"sessionCount": 3,
+	"symbols": ["XBTUSD", "EOSZ18", "XRPZ18"]
+}

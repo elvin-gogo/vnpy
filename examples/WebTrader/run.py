@@ -11,8 +11,8 @@ from multiprocessing import Process
 
 import webbrowser
 
-from webServer import run as runWebServer
-from tradingServer import main as runTradingServer
+from .webServer import run as runWebServer
+from .tradingServer import main as runTradingServer
 from vnpy.trader.vtEngine import LogEngine
 
 

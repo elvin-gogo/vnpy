@@ -12,9 +12,9 @@ import traceback
 from queue import Queue, Empty
 from multiprocessing.dummy import Pool
 from time import time
-from urlparse import urlparse
+# from urlparse import urlparse
 from copy import copy
-from urllib import urlencode
+from urllib import parse
 from threading import Thread
 
 from six.moves import input
@@ -139,7 +139,7 @@ class CoinbaseRestApi(object):
         """生成签名"""
         # 对params在HTTP报文路径中，以请求字段方式序列化
         if params:
-            query = urlencode(sorted(params.items()))
+            query = parse.urlencode(sorted(params.items()))
             path = path + '?' + query
         
         if body is None:

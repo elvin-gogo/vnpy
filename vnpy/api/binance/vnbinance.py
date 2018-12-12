@@ -12,7 +12,7 @@ from queue import Queue, Empty
 from threading import Thread
 from multiprocessing.dummy import Pool
 from time import time, sleep
-from urllib import urlencode
+from urllib import parse
 
 from websocket import create_connection
 
@@ -102,7 +102,7 @@ class BinanceApi(object):
             if not stream:
                 params['recvWindow'] = self.recvWindow
                 params['timestamp'] = int(time()*1000)
-                query = urlencode(sorted(params.items()))
+                query = parse.urlencode(sorted(params.items()))
                 
                 signature = hmac.new(self.secret, query.encode('utf-8'),
                                      hashlib.sha256).hexdigest()
@@ -112,7 +112,7 @@ class BinanceApi(object):
                 params = None       # 参数添加到query中后，清空参数字典
             else:
                 if params:
-                    query = urlencode(sorted(params.items()))
+                    query = parse.urlencode(sorted(params.items()))
                     url = REST_ENDPOINT + path + '?' + query
                     params = None
                 else:

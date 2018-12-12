@@ -40,7 +40,8 @@ class MainEngine(object):
         
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
-        
+        # self.dbClient = MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'], connectTimeoutMS=500)
+
         # 接口实例
         self.gatewayDict = OrderedDict()
         self.gatewayDetailList = []

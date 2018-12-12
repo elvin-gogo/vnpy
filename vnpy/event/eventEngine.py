@@ -8,7 +8,7 @@ from time import sleep
 from collections import defaultdict
 
 # 第三方模块
-from qtpy.QtCore import QTimer
+# from qtpy.QtCore import QTimer
 
 # 自己开发的模块
 from .eventType import *
@@ -64,8 +64,8 @@ class EventEngine(object):
         self.__thread = Thread(target = self.__run)
         
         # 计时器，用于触发计时器事件
-        self.__timer = QTimer()
-        self.__timer.timeout.connect(self.__onTimer)
+        # self.__timer = QTimer()
+        # self.__timer.timeout.connect(self.__onTimer)
         
         # 这里的__handlers是一个字典，用来保存对应的事件调用关系
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
@@ -123,8 +123,8 @@ class EventEngine(object):
         
         # 启动计时器，计时器事件间隔默认设定为1秒
         if timer:
-            self.__timer.start(1000)
-    
+            # self.__timer.start(1000)
+            pass
     #----------------------------------------------------------------------
     def stop(self):
         """停止引擎"""
@@ -132,7 +132,7 @@ class EventEngine(object):
         self.__active = False
         
         # 停止计时器
-        self.__timer.stop()
+        # self.__timer.stop()
         
         # 等待事件处理线程退出
         self.__thread.join()

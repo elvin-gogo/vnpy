@@ -19,7 +19,8 @@ import zlib
 from datetime import datetime, timedelta
 from copy import copy
 from math import pow
-from urllib import urlencode
+from urllib import parse
+# from urllib import urlencode
 
 from requests import ConnectionError
 
@@ -207,7 +208,8 @@ class OkexfRestApi(RestClient):
         request.data = json.dumps(request.data)
         
         if request.params:
-            path = request.path + '?' + urlencode(request.params)
+            path = request.path + '?' + parse.urlencode(request.params)
+            # path = request.path + '?' + urlencode(request.params)
         else:
             path = request.path
             

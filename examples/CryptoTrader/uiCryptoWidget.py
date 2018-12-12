@@ -277,8 +277,8 @@ class BasicMonitor(QtWidgets.QTableWidget):
         self.setSortingEnabled(self.sorting)
         
         # 设为表头拉伸
-        self.horizontalHeader().setResizeMode(self.resizeMode)
-        # self.horizontalHeader().setSectionResizeMode(self.resizeMode)
+        # self.horizontalHeader().setResizeMode(self.resizeMode)
+        self.horizontalHeader().setSectionResizeMode(self.resizeMode)
         # setSectionResizeMode    是qt5的写法
 
     #----------------------------------------------------------------------
@@ -485,8 +485,8 @@ class LogMonitor(BasicMonitor):
         self.signalError.connect(self.processErrorEvent)
         self.eventEngine.register(EVENT_ERROR, self.signalError.emit)
         
-        self.horizontalHeader().setResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        # self.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        # self.horizontalHeader().setResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         self.setFixedHeight(200)
     
     #----------------------------------------------------------------------
@@ -688,10 +688,10 @@ class DepthMonitor(QtWidgets.QTableWidget):
         self.setRowCount(11)
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)   
-        # self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        # self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.verticalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        # self.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        # self.verticalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
 
         left = QtCore.Qt.AlignLeft
         right = QtCore.Qt.AlignRight
