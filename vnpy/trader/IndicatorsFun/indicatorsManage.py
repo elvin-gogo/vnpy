@@ -77,8 +77,8 @@ class IndicatorsFunManage(object):
         """载入算法"""
         try:
             className = indicatorsInfo["className"]
-        except Exception, e:
-            print (u'载入指标算法出错：%s' % e)
+        except Exception as e:
+            print(u'载入指标算法出错：%s' % e)
 
         # 获取算法类
         alogClass = INDICATORS_CLASS.get(className, None)
