@@ -794,7 +794,7 @@ class OkexfWebsocketApi(WebsocketClient):
 #----------------------------------------------------------------------
 def generateSignature(msg, apiSecret):
     """签名V3"""
-    return base64.b64encode(hmac.new(apiSecret, msg.encode(), hashlib.sha256).digest())
+    return base64.b64encode(hmac.new(apiSecret.encode(), msg.encode(), hashlib.sha256).digest())
 
 
 
