@@ -3,10 +3,10 @@
 import psutil
 import traceback
 
+from examples.CryptoTrader.uiCryptoWidget import *
 from vnpy.trader.vtFunction import loadIconPath
 from vnpy.trader.vtGlobal import globalSetting
 
-from uiCryptoWidget import *
 
 
 ########################################################################
@@ -33,7 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.initUi()
         self.loadWindowSettings('custom')
-        
+
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
@@ -176,7 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """创建操作功能"""
         action = QtWidgets.QAction(actionName, self)
         action.triggered.connect(function)
-        
+
         if iconPath:
             icon = QtGui.QIcon(iconPath)
             action.setIcon(icon)
