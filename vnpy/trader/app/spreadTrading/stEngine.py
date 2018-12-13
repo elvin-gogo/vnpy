@@ -472,8 +472,10 @@ class StAlgoEngine(object):
     #----------------------------------------------------------------------
     def stopAll(self):
         """停止全部算法"""
-        for algo in self.algoDict.values():
+        for k, algo in self.algoDict.items():
             algo.stop()
+            del self.algoDict[k]
+            print(self.algoDict.items())
             
     #----------------------------------------------------------------------
     def startAlgo(self, spreadName):
@@ -487,6 +489,8 @@ class StAlgoEngine(object):
         """停止算法"""
         algo = self.algoDict[spreadName]
         algoActive = algo.stop()
+        del self.algoDict[spreadName]
+        print(self.algoDict.items())
         return algoActive
     
     #----------------------------------------------------------------------

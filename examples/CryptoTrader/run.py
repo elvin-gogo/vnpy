@@ -53,6 +53,7 @@ def main():
     me.addGateway(huobiGateway)
     me.addGateway(okexGateway)
     me.addGateway(binanceGateway)
+
     me.addGateway(bitfinexGateway)
 
     # 添加上层应用

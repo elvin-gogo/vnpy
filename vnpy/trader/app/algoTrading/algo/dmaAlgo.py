@@ -3,6 +3,7 @@
 from __future__ import division
 from collections import OrderedDict
 
+from commen.logg import get_logger
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE,
                                     PRICETYPE_LIMITPRICE, PRICETYPE_MARKETPRICE,
@@ -12,6 +13,9 @@ from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
 from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 
 from six import text_type
+
+
+logger = get_logger()
 
 
 STATUS_FINISHED = set([STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED])
@@ -25,6 +29,7 @@ class DmaAlgo(AlgoTemplate):
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):
+        logger.info(f"进入DMA算法初始化")
         """Constructor"""
         super(DmaAlgo, self).__init__(engine, setting, algoName)
         
@@ -48,6 +53,7 @@ class DmaAlgo(AlgoTemplate):
     def onTick(self, tick):
         """"""
         # 发出委托
+        logger.info(f"ontick启动")
         if not self.vtOrderID:
             if self.direction == DIRECTION_LONG:
                 func = self.buy

@@ -46,7 +46,7 @@ def loadAlgoModule(path, prefix):
                         WIDGET_DICT[algo.templateName] = widget
                 except:
                     print ('-' * 20)
-                    print ('Failed to import strategy file %s:' %moduleName)
+                    print ('Failed to import strategy file %s:' % moduleName)
                     traceback.print_exc()                       
 
 
