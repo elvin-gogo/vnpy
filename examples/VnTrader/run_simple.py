@@ -20,7 +20,7 @@ from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import ctpGateway
+# from vnpy.trader.gateway import ctpGateway
 
 # 加载上层应用
 from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
@@ -39,12 +39,12 @@ def main():
     me = MainEngine(ee)
 
     # 添加交易接口
-    me.addGateway(ctpGateway)
+    # me.addGateway(ctpGateway)
 
     # 添加上层应用
     me.addApp(riskManager)
-    me.addApp(ctaStrategy)
-    me.addApp(spreadTrading)
+    # me.addApp(ctaStrategy)
+    # me.addApp(spreadTrading)
 
     # 创建主窗口
     mw = MainWindow(me, ee)

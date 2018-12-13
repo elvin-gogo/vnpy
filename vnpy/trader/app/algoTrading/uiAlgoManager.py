@@ -368,7 +368,7 @@ class AlgoSettingMonitor(QtWidgets.QTableWidget):
         l = []
         for k, v in d.items():
             if k not in ['settingName', 'templateName', '_id']:
-                msg = u'%s:%s' %(k, v)
+                msg = u'%s:%s' % (k, v)
                 l.append(msg)
         text = ','.join(l)
         return text

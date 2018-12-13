@@ -213,8 +213,8 @@ class GatewayApi(BitfinexApi):
         authPayload = 'AUTH' + str(nonce)
         signature = hmac.new(
           self.secretKey.encode(),
-          msg = authPayload.encode(),
-          digestmod = hashlib.sha384
+          msg=authPayload.encode(),
+          digestmod=hashlib.sha384
         ).hexdigest()
         
         req = {

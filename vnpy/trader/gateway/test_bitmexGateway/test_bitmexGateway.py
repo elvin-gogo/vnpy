@@ -205,7 +205,7 @@ class BitmexRestApi(RestClient):
             request.data = ''
         
         msg = request.method + '/api/v1' + path + str(expires) + request.data
-        signature = hmac.new(self.apiSecret, msg,
+        signature = hmac.new(self.apiSecret.encode(), msg.encode(),
                              digestmod=hashlib.sha256).hexdigest()
         
         # 添加表头
