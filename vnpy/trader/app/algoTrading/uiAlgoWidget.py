@@ -49,6 +49,7 @@ class AlgoWidget(QtWidgets.QFrame):
     #----------------------------------------------------------------------
     def addAlgo(self):
         """启动算法"""
+        print("启动算法")
         setting = self.getAlgoSetting()
         self.algoEngine.addAlgo(setting)
     

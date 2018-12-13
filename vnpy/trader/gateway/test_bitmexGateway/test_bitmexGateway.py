@@ -487,8 +487,7 @@ class BitmexWebsocketApi(WebsocketClient):
         method = 'GET'
         path = '/realtime'
         msg = method + path + str(expires)
-        self.apiSecret = self.apiSecret.encode("utf-8")
-        signature = hmac.new(self.apiSecret, msg.encode("utf-8"), digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(self.apiSecret.encode(), msg.encode("utf-8"), digestmod=hashlib.sha256).hexdigest()
         
         req = {
             'op': 'authKey', 

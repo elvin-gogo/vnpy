@@ -114,7 +114,7 @@ class AlgoEngine(object):
         """停止算法"""
         if algoName in self.algoDict:
             self.algoDict[algoName].stop()
-            del self.algoDict[algoName]
+            # del self.algoDict[algoName]
     
     #----------------------------------------------------------------------
     def stopAll(self):

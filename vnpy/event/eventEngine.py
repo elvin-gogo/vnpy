@@ -79,7 +79,7 @@ class EventEngine(object):
         """引擎运行"""
         while self.__active == True:
             try:
-                event = self.__queue.get(block = True, timeout = 1)  # 获取事件的阻塞时间设为1秒
+                event = self.__queue.get(block=True, timeout=1)  # 获取事件的阻塞时间设为1秒
                 self.__process(event)
             except Empty:
                 pass
@@ -196,10 +196,10 @@ class EventEngine2(object):
         self.__active = False
         
         # 事件处理线程
-        self.__thread = Thread(target = self.__run)
+        self.__thread = Thread(target=self.__run)
         
         # 计时器，用于触发计时器事件
-        self.__timer = Thread(target = self.__runTimer)
+        self.__timer = Thread(target=self.__runTimer)
         self.__timerActive = False                      # 计时器工作状态
         self.__timerSleep = 1                           # 计时器触发间隔（默认1秒）        
         
@@ -215,7 +215,7 @@ class EventEngine2(object):
         """引擎运行"""
         while self.__active == True:
             try:
-                event = self.__queue.get(block = True, timeout = 1)  # 获取事件的阻塞时间设为1秒
+                event = self.__queue.get(block=True, timeout=1)  # 获取事件的阻塞时间设为1秒
                 self.__process(event)
             except Empty:
                 pass

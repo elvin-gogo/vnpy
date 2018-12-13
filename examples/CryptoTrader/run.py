@@ -11,7 +11,7 @@ reload(sys)
 
 # vn.trader模块
 from vnpy.event import EventEngine
-from vnpy.trader.vtEngine import MainEngine
+from vnpy.trader.vtEngine import MainEngine, EventEngine2
 from vnpy.trader.uiQt import createQApp
 
 # 加载底层接口

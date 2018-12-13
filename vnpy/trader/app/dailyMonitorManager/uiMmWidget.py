@@ -15,7 +15,7 @@ from collections import OrderedDict
 from vnpy.trader.app.dailyStrategy.dailyBase import *   #  DAY_DB_NAME,MINUTE_30_DB_NAME,MINUTE_60_DB_NAME,MINUTE_5_DB_NAME,MINUTE_DB_NAME,WEEK_DB_NAME
 from vnpy.trader.indicator.SAR import  *
 from vnpy.trader.vtEngine import *
-import timer
+# import timer
 import time
 import threading as thd
 from  vnpy.trader.vtFunction import *
@@ -159,7 +159,7 @@ class MmEngineManager(QtWidgets.QMainWindow):#QWidget
             return;
         self.subscribeEvent(symbol)  # 订阅合约
         self.currrentSymbol = symbol
-        print symbol
+        print(symbol)
 
         self.loadBar(symbol)
 
@@ -195,7 +195,7 @@ class MmEngineManager(QtWidgets.QMainWindow):#QWidget
         self.subscribeEvent(symbol)
         self.currrentSymbol = symbol
         self.currrentXmin=xmin
-        print symbol
+        print(symbol)
 
         self.loadXBar(symbol,xmin)
 

@@ -8,10 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pymongo import MongoClient
 
+from examples.TurtleStrategy.turtleStrategy import TurtlePortfolio
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import DIRECTION_LONG, DIRECTION_SHORT
-
-from turtleStrategy import TurtlePortfolio
 
 
 DAILY_DB_NAME = 'VnTrader_Daily_Db'
@@ -306,7 +305,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出信息"""
-        print content
+        print(content)
     
     #----------------------------------------------------------------------
     def getTradeData(self, vtSymbol=''):
