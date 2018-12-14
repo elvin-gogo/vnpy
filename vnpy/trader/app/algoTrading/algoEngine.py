@@ -232,6 +232,7 @@ class AlgoEngine(object):
         d['algoName'] = algoName
         event = Event(EVENT_ALGO_VAR)
         event.dict_['data'] = d
+        logger.info(f"{event.dict_['data']}")
         self.eventEngine.put(event)
         
         # RPC推送
