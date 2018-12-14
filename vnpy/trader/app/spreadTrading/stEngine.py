@@ -475,8 +475,7 @@ class StAlgoEngine(object):
         for k, algo in self.algoDict.items():
             algo.stop()
             del self.algoDict[k]
-            print(self.algoDict.items())
-            
+
     #----------------------------------------------------------------------
     def startAlgo(self, spreadName):
         """启动算法"""
@@ -490,7 +489,6 @@ class StAlgoEngine(object):
         algo = self.algoDict[spreadName]
         algoActive = algo.stop()
         del self.algoDict[spreadName]
-        print(self.algoDict.items())
         return algoActive
     
     #----------------------------------------------------------------------

@@ -48,4 +48,5 @@ def get_logger(app='vnpy'):
 
 
 if __name__ == '__main__':
-    get_logger()
+    logger = get_logger()
+    logger.info("a")

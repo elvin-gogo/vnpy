@@ -2,11 +2,13 @@
 
 import time
 
+from commen.logg import get_logger
 from vnpy.event import *
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import *
+logger = get_logger()
 
 
 ########################################################################

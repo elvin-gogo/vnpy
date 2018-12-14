@@ -8,6 +8,7 @@ from __future__ import division
 import os
 import importlib
 
+from commen.logg import get_logger
 from vnpy.event import Event
 from vnpy.rpc import RpcServer
 from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE
@@ -19,7 +20,7 @@ from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, V
 
 from .algo import ALGO_DICT
 
-
+logger = get_logger()
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
 EVENT_ALGO_PARAM = 'eAlgoParam'     # 算法参数事件
 EVENT_ALGO_VAR = 'eAlgoVar'         # 算法变量事件
@@ -68,9 +69,9 @@ class AlgoEngine(object):
     def processTickEvent(self, event):
         """行情事件"""
         tick = event.dict_['data']
-        
         l = self.symbolAlgoDict.get(tick.vtSymbol, None)
-        if l:    
+        # logger.info(f"{l}")
+        if l:
             for algo in l:
                 algo.updateTick(tick)
         
@@ -122,6 +123,8 @@ class AlgoEngine(object):
         l = self.algoDict.keys()
         for algoName in l:
             self.stopAlgo(algoName)
+            # del self.algoDict[algoName]
+        self.algoDict.clear()
     
     #----------------------------------------------------------------------
     def subscribe(self, algo, vtSymbol):
@@ -150,10 +153,12 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, algo, vtSymbol, direction, price, volume, 
                   priceType=None, offset=None):
+        logger.info(f"{algo.algoName}")
+        logger.info(f"进入发单")
         """发单"""
         contract = self.mainEngine.getContract(vtSymbol)
         if not contract:
-            self.writeLog(u'%s委托下单失败，找不到合约：%s' %(algo.algoName, vtSymbol))
+            self.writeLog(u'%s委托下单失败，找不到合约：%s' % (algo.algoName, vtSymbol))
 
         req = VtOrderReq()
         req.vtSymbol = vtSymbol
@@ -176,6 +181,7 @@ class AlgoEngine(object):
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)
         self.orderAlgoDict[vtOrderID] = algo
+        logger.info(f"{vtOrderID}")
         
         return vtOrderID
 

@@ -53,22 +53,26 @@ class DmaAlgo(AlgoTemplate):
     def onTick(self, tick):
         """"""
         # 发出委托
-        logger.info(f"ontick启动")
+        logger.info(f"********************ontick启动*************************")
+        logger.info(f"{self.vtOrderID}")
+        logger.info(f"{self.vtSymbol, self.price, self.totalVolume, self.priceType, self.offset}")
+
         if not self.vtOrderID:
             if self.direction == DIRECTION_LONG:
                 func = self.buy
             else:
                 func = self.sell
-                
-            self.vtOrderID = func(self.vtSymbol, self.price, self.totalVolume, 
+
+            self.vtOrderID = func(self.vtSymbol, self.price, self.totalVolume,
                                   self.priceType, self.offset)
-        
+
         # 更新变量
-        self.varEvent()        
-        
-    #----------------------------------------------------------------------
+        self.varEvent()
+
+        #----------------------------------------------------------------------
     def onTrade(self, trade):
         """"""
+        logger.info(f"交易交易交易")
         pass
     
     #----------------------------------------------------------------------
@@ -181,6 +185,7 @@ class DmaWidget(AlgoWidget):
     #----------------------------------------------------------------------
     def getAlgoSetting(self):
         """"""
+        # 配置
         setting = OrderedDict()
         setting['templateName'] = DmaAlgo.templateName
         setting['vtSymbol'] = str(self.lineSymbol.text())

@@ -13,6 +13,7 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from copy import copy
 
+from commen.logg import get_logger
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
@@ -23,6 +24,8 @@ from vnpy.trader.app import AppEngine
 
 from .ctaBase import *
 from .strategy import STRATEGY_CLASS
+
+logger = get_logger()
 
 
 ########################################################################
@@ -559,13 +562,14 @@ class CtaEngine(AppEngine):
     def putStrategyEvent(self, name):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         strategy = self.strategyDict[name]
-        d = {k:strategy.__getattribute__(k) for k in strategy.varList}
+        d = {k: strategy.__getattribute__(k) for k in strategy.varList}
         
+        logger.info(f"{d}")
         event = Event(EVENT_CTA_STRATEGY+name)
         event.dict_['data'] = d
         self.eventEngine.put(event)
-        
-        d2 = {k:str(v) for k,v in d.items()}
+
+        d2 = {k: str(v) for k, v in d.items()}
         d2['name'] = name
         event2 = Event(EVENT_CTA_STRATEGY)
         event2.dict_['data'] = d2

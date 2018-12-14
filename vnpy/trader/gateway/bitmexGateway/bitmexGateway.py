@@ -57,7 +57,7 @@ priceTypeMap[PRICETYPE_MARKETPRICE] = 'Market'
 
 ########################################################################
 class BitmexGateway(VtGateway):
-    """Bitfinex接口"""
+    """Bitmex接口"""
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName=''):

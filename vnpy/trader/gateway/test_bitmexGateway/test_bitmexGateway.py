@@ -21,6 +21,7 @@ from urllib import parse
 
 from requests import ConnectionError
 
+from commen.logg import get_logger
 from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.vtGateway import *
@@ -53,7 +54,7 @@ priceTypeMap = {}
 priceTypeMap[PRICETYPE_LIMITPRICE] = 'Limit'
 priceTypeMap[PRICETYPE_MARKETPRICE] = 'Market'
 
-
+logger = get_logger()
 
 ########################################################################
 class BitmexGateway(VtGateway):
@@ -109,6 +110,7 @@ class BitmexGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
+        # logger.info(f"{subscribeReq.symbol}")   XBTUSD
         self.wsApi.subscribeMarketData(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
@@ -409,7 +411,7 @@ class BitmexWebsocketApi(WebsocketClient):
         self.start()
         
         for symbol in symbols:
-            self.subscribeMarketData(symbol)        
+            self.subscribeMarketData(symbol)
     
     #----------------------------------------------------------------------
     def subscribeMarketData(self, symbol):
@@ -419,7 +421,7 @@ class BitmexWebsocketApi(WebsocketClient):
         tick.symbol = symbol
         tick.exchange = EXCHANGE_BITMEX
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
-        self.tickDict[symbol] = tick        
+        self.tickDict[symbol] = tick
         
     #----------------------------------------------------------------------
     def onConnected(self):

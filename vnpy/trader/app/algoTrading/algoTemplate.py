@@ -3,8 +3,10 @@
 from __future__ import division
 from datetime import datetime
 
+from commen.logg import get_logger
 from vnpy.trader.vtConstant import STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_UNKNOWN
 
+logger = get_logger()
 
 # 活动委托状态
 STATUS_ACTIVE = [STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_UNKNOWN]
@@ -117,7 +119,8 @@ class AlgoTemplate(object):
     def subscribe(self, vtSymbol):
         """"""
         self.engine.subscribe(self, vtSymbol)
-    
+        # logger.info(f"{vtSymbol}")        XBTUSD
+
     #----------------------------------------------------------------------
     def buy(self, vtSymbol, price, volume, priceType=None, offset=None):
         """"""
