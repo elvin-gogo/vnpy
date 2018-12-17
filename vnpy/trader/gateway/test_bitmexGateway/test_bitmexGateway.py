@@ -276,8 +276,8 @@ class TestBitmexRestApi(RestClient):
         )
         print(vtOrder.gatewayName, vtOrder.status, vtOrder.exchange)
         self.addRequest('POST', '/order', callback=self.onSendOrder, data=data, extra=vtOrder,
-                        # onFailed=self.onSendOrderFailed,
-                        # onError=self.onSendOrderError,
+                        onFailed=self.onSendOrderFailed,
+                        onError=self.onSendOrderError,
                         )
         return vtOrderID
 
