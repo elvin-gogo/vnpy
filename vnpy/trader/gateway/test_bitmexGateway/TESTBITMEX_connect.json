@@ -1,7 +1,7 @@
 {
 	"testnet": true,
-	"apiKey": "Pyp72M6uaCQ2i_J5Tg8U2BPB",
-	"apiSecret": "Um1-ILvaBRTCS3ZWIj-oG4v4SkBIqRpHBMXaJ-qvJbzQC40n",
+	"apiKey": "V-vrn7tYHiiVPYniXkzcW8yb",
+	"apiSecret": "WcaJw6rx03Ts9aA-tHQ66x8EPa16eaVNu3NlAFmDQPOp1VSV",
 	"sessionCount": 3,
 	"symbols": ["XBTUSD", "EOSZ18", "XRPZ18"]
 }

@@ -377,8 +377,8 @@ class TestBitmexWebsocketApi(WebsocketClient):
         self.gateway = gateway
         self.gatewayName = gateway.gatewayName
 
-        self.apiKey = 'Pyp72M6uaCQ2i_J5Tg8U2BPB'
-        self.apiSecret = 'Um1-ILvaBRTCS3ZWIj-oG4v4SkBIqRpHBMXaJ-qvJbzQC40n'
+        self.apiKey = ''
+        self.apiSecret = ''
 
         self.callbackDict = {
             'trade': self.onTick,

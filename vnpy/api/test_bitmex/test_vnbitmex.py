@@ -245,11 +245,11 @@ class TestBitmexWebsocketApi(object):
 
 
 if __name__ == '__main__':
-    API_KEY = 'Pyp72M6uaCQ2i_J5Tg8U2BPB'
-    API_SECRET = 'Um1-ILvaBRTCS3ZWIj-oG4v4SkBIqRpHBMXaJ-qvJbzQC40n'
+    API_KEY = ''
+    API_SECRET = ''
     
     ## REST测试
-    rest = BitmexRestApi()
+    rest = TestBitmexRestApi()
     rest.init(API_KEY, API_SECRET)
     rest.start(3)
     
