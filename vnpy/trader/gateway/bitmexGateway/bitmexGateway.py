@@ -27,6 +27,8 @@ from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
 
 
+# REST_HOST = 'https://testnet.bitmex.com/api/v1'
+# WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
 REST_HOST = 'https://www.bitmex.com/api/v1'
 WEBSOCKET_HOST = 'wss://www.bitmex.com/realtime'
 
@@ -487,8 +489,7 @@ class BitmexWebsocketApi(WebsocketClient):
         method = 'GET'
         path = '/realtime'
         msg = method + path + str(expires)
-        self.apiSecret = self.apiSecret.encode("utf-8")
-        signature = hmac.new(self.apiSecret, msg.encode("utf-8"), digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(self.apiSecret.encode(), msg.encode(), digestmod=hashlib.sha256).hexdigest()
         
         req = {
             'op': 'authKey', 

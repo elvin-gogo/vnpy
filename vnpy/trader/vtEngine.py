@@ -100,6 +100,8 @@ class MainEngine(object):
         
     #----------------------------------------------------------------------
     def getGateway(self, gatewayName):
+        print("*-" * 20)
+        print(gatewayName)
         """获取接口"""
         if gatewayName in self.gatewayDict:
             return self.gatewayDict[gatewayName]
@@ -131,6 +133,8 @@ class MainEngine(object):
             return ''
 
         gateway = self.getGateway(gatewayName)
+        print("对特定借口发单")
+        print(gatewayName)
         
         if gateway:
             vtOrderID = gateway.sendOrder(orderReq)

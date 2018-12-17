@@ -21,17 +21,17 @@ import requests
 import websocket
 
 
-# REST_HOST = 'https://testnet.bitmex.com/api/v1'
-# WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
-REST_HOST = 'https://www.bitmex.com/api/v1'
-WEBSOCKET_HOST = 'wss://www.bitmex.com/realtime'
+REST_HOST = 'https://testnet.bitmex.com/api/v1'
+WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
+# REST_HOST = 'https://www.bitmex.com/api/v1'
+# WEBSOCKET_HOST = 'wss://www.bitmex.com/realtime'
 
 TESTNET_REST_HOST = 'https://testnet.bitmex.com/api/v1'
 TESTNET_WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
 
 
 ########################################################################
-class BitmexRestApi(object):
+class TestBitmexRestApi(object):
     """REST API"""
 
     #----------------------------------------------------------------------
@@ -40,28 +40,26 @@ class BitmexRestApi(object):
         self.apiKey = ''
         self.apiSecret = ''
         self.host = ''
-        
+
         self.active = False
         self.reqid = 0
         self.queue = Queue()
         self.pool = None
         self.sessionDict = {}   # 会话对象字典
-        
+
         self.header = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'application/json'
         }
     
     #----------------------------------------------------------------------
-    def init(self, apiKey, apiSecret, testnet=False):
+    def init(self, apiKey, apiSecret):
         """初始化"""
         self.apiKey = apiKey
         self.apiSecret = apiSecret
         
-        if testnet:
-            self.host = TESTNET_REST_HOST
-        else:
-            self.host = REST_HOST
+        self.host = REST_HOST
+
         
     #----------------------------------------------------------------------
     def start(self, n=3):
@@ -161,24 +159,22 @@ class BitmexRestApi(object):
 
     
 ########################################################################
-class BitmexWebsocketApi(object):
+class TestBitmexWebsocketApi(object):
     """Websocket API"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
-        """Constructor"""
-        self.ws = None
-        self.thread = None
-        self.active = False
-        self.host = ''
+    # def __init__(self):
+    #     """Constructor"""
+    #     self.ws = None
+    #     self.thread = None
+    #     self.active = False
+    #     self.host = ''
     
     #----------------------------------------------------------------------
-    def start(self, testnet=False):
+    def start(self):
         """启动"""
-        if testnet:
-            self.host = TESTNET_WEBSOCKET_HOST
-        else:
-            self.host = WEBSOCKET_HOST
+
+        self.host = WEBSOCKET_HOST
             
         self.connectWs()
     
@@ -242,15 +238,15 @@ class BitmexWebsocketApi(object):
     #----------------------------------------------------------------------
     def sendReq(self, req):
         """发出请求"""
-        self.ws.send(json.dumps(req))      
+        self.ws.send(json.dumps(req))
 
 
 
 
 
 if __name__ == '__main__':
-    API_KEY = ''
-    API_SECRET = ''
+    API_KEY = 'Pyp72M6uaCQ2i_J5Tg8U2BPB'
+    API_SECRET = 'Um1-ILvaBRTCS3ZWIj-oG4v4SkBIqRpHBMXaJ-qvJbzQC40n'
     
     ## REST测试
     rest = BitmexRestApi()
@@ -258,9 +254,18 @@ if __name__ == '__main__':
     rest.start(3)
     
     data = {
-        'symbol': 'XBTUSD'
+        'symbol': 'XBTUSD',
+        "side": "Buy",
+        "orderQty": 100,
+        "price": 4000,
+        "ordType": "Limit"
     }
-    rest.addReq('POST', '/position/isolate', rest.onData, postdict=data)
+    rest.addReq('POST', '/order', rest.onData, postdict=data)
+    # rest.addReq('POST', '/position/isolate', rest.onData, postdict=data)
+
+
+
+
     #rest.addReq('GET', '/instrument', rest.onData)
     
     # WEBSOCKET测试
@@ -287,4 +292,4 @@ if __name__ == '__main__':
     #req = {"op": "subscribe", "args": ['instrument']}
     #ws.sendReq(req)
 
-    input()
+    # input()

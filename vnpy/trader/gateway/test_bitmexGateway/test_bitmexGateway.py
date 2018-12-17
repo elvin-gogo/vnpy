@@ -3,15 +3,17 @@
 '''
 '''
 
-
 from __future__ import print_function
 
 import logging
+import pytest
 import os
 import json
 import hashlib
 import hmac
 import sys
+
+import ccxt
 import time
 import traceback
 from datetime import datetime, timedelta
@@ -26,13 +28,13 @@ from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
 
-
 REST_HOST = 'https://testnet.bitmex.com/api/v1'
 WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
+# REST_HOST = 'https://www.bitmex.com/api/v1'
+# WEBSOCKET_HOST = 'wss://www.bitmex.com/realtime'
 
 TESTNET_REST_HOST = 'https://testnet.bitmex.com/api/v1'
 TESTNET_WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
-
 
 # 委托状态类型映射
 statusMapReverse = {}
@@ -46,20 +48,19 @@ statusMapReverse['Rejected'] = STATUS_REJECTED
 directionMap = {}
 directionMap[DIRECTION_LONG] = 'Buy'
 directionMap[DIRECTION_SHORT] = 'Sell'
-directionMapReverse = {v:k for k,v in directionMap.items()}
+directionMapReverse = {v: k for k, v in directionMap.items()}
 
 # 价格类型映射
 priceTypeMap = {}
 priceTypeMap[PRICETYPE_LIMITPRICE] = 'Limit'
 priceTypeMap[PRICETYPE_MARKETPRICE] = 'Market'
 
-logger = get_logger()
 
 ########################################################################
 class TestBitmexGateway(VtGateway):
     """TestBitmex接口"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName=''):
         """Constructor"""
         super(TestBitmexGateway, self).__init__(eventEngine, gatewayName)
@@ -67,14 +68,14 @@ class TestBitmexGateway(VtGateway):
         self.restApi = TestBitmexRestApi(self)
         self.wsApi = TestBitmexWebsocketApi(self)
 
-        self.qryEnabled = False         # 是否要启动循环查询
+        self.qryEnabled = False  # 是否要启动循环查询
 
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
 
         self.exchange = constant.EXCHANGE_TEST_BITMEX
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self):
         """连接"""
         try:
@@ -94,7 +95,7 @@ class TestBitmexGateway(VtGateway):
             apiSecret = str(setting['apiSecret'])
             sessionCount = int(setting['sessionCount'])
             symbols = setting['symbols']
-            testnet = setting.get('testnet',False)
+            testnet = setting.get('testnet', False)
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -106,42 +107,41 @@ class TestBitmexGateway(VtGateway):
         self.restApi.connect(apiKey, apiSecret, sessionCount, testnet)
         self.wsApi.connect(apiKey, apiSecret, symbols, testnet)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        # logger.info(f"{subscribeReq.symbol}")   XBTUSD
         self.wsApi.subscribeMarketData(subscribeReq.symbol)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         return self.restApi.sendOrder(orderReq)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.restApi.cancelOrder(cancelOrderReq)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def close(self):
         """关闭"""
         self.restApi.stop()
         self.wsApi.stop()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initQuery(self):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
             self.qryFunctionList = [self.queryAccount]
 
-            self.qryCount = 0           # 查询触发倒计时
-            self.qryTrigger = 1         # 查询触发点
-            self.qryNextFunction = 0    # 上次运行的查询函数索引
+            self.qryCount = 0  # 查询触发倒计时
+            self.qryTrigger = 1  # 查询触发点
+            self.qryNextFunction = 0  # 上次运行的查询函数索引
 
             self.startQuery()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def query(self, event):
         """注册到事件处理引擎上的查询函数"""
         self.qryCount += 1
@@ -159,12 +159,12 @@ class TestBitmexGateway(VtGateway):
             if self.qryNextFunction == len(self.qryFunctionList):
                 self.qryNextFunction = 0
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def startQuery(self):
         """启动连续查询"""
         self.eventEngine.register(EVENT_TIMER, self.query)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""
         self.qryEnabled = qryEnabled
@@ -174,12 +174,12 @@ class TestBitmexGateway(VtGateway):
 class TestBitmexRestApi(RestClient):
     """REST API实现"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
         super(TestBitmexRestApi, self).__init__()
 
-        self.gateway = gateway                  # type: TestBitmexGateway # gateway对象
+        self.gateway = gateway  # type: TestBitmexGateway # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
 
         self.apiKey = ''
@@ -188,7 +188,7 @@ class TestBitmexRestApi(RestClient):
         self.orderId = 1000000
         self.loginTime = 0
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sign(self, request):
         """BitMEX的签名方案"""
         # 生成签名
@@ -206,6 +206,7 @@ class TestBitmexRestApi(RestClient):
             request.data = ''
 
         msg = request.method + '/api/v1' + path + str(expires) + request.data
+        print(self.apiSecret)
         signature = hmac.new(self.apiSecret.encode(), msg.encode(),
                              digestmod=hashlib.sha256).hexdigest()
 
@@ -221,7 +222,7 @@ class TestBitmexRestApi(RestClient):
         request.headers = headers
         return request
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self, apiKey, apiSecret, sessionCount, testnet):
         """连接服务器"""
         self.apiKey = apiKey
@@ -229,16 +230,13 @@ class TestBitmexRestApi(RestClient):
 
         self.loginTime = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
 
-        if not testnet:
-            self.init(REST_HOST)
-        else:
-            self.init(TESTNET_REST_HOST)
+        self.init(REST_HOST)
 
         self.start(sessionCount)
 
         self.writeLog(u'REST API启动成功')
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
         log = VtLogData()
@@ -246,8 +244,8 @@ class TestBitmexRestApi(RestClient):
         log.logContent = content
         self.gateway.onLog(log)
 
-    #----------------------------------------------------------------------
-    def sendOrder(self, orderReq):# type: (VtOrderReq)->str
+    # ----------------------------------------------------------------------
+    def sendOrder(self, orderReq):  # type: (VtOrderReq)->str
         """"""
         self.orderId += 1
         orderId = str(self.loginTime + self.orderId)
@@ -276,14 +274,14 @@ class TestBitmexRestApi(RestClient):
             direction=orderReq.direction,
             offset=orderReq.offset,
         )
-
+        print(vtOrder.gatewayName, vtOrder.status, vtOrder.exchange)
         self.addRequest('POST', '/order', callback=self.onSendOrder, data=data, extra=vtOrder,
-                        onFailed=self.onSendOrderFailed,
-                        onError=self.onSendOrderError,
+                        # onFailed=self.onSendOrderFailed,
+                        # onError=self.onSendOrderError,
                         )
         return vtOrderID
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """"""
         orderID = cancelOrderReq.orderID
@@ -297,22 +295,22 @@ class TestBitmexRestApi(RestClient):
                         onError=self.onCancelOrderError,
                         )
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onSendOrderFailed(self, _, request):
         """
         下单失败回调：服务器明确告知下单失败
         """
-        vtOrder = request.extra     # type: VtOrderData
+        vtOrder = request.extra  # type: VtOrderData
         vtOrder.status = constant.STATUS_REJECTED
         self.gateway.onOrder(vtOrder)
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onSendOrderError(self, exceptionType, exceptionValue, tb, request):
         """
         下单失败回调：连接错误
         """
-        vtOrder = request.extra # type: VtOrderData
+        vtOrder = request.extra  # type: VtOrderData
         vtOrder.status = constant.STATUS_REJECTED
         self.gateway.onOrder(vtOrder)
 
@@ -320,12 +318,13 @@ class TestBitmexRestApi(RestClient):
         if not issubclass(exceptionType, ConnectionError):
             self.onError(exceptionType, exceptionValue, tb, request)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onSendOrder(self, data, request):
         """"""
+        print("sendOrder")
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onCancelOrderError(self, exceptionType, exceptionValue, tb, request):
         """
         撤单失败回调：连接错误
@@ -334,12 +333,12 @@ class TestBitmexRestApi(RestClient):
         if not issubclass(exceptionType, ConnectionError):
             self.onError(exceptionType, exceptionValue, tb, request)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onCancelOrder(self, data, request):
         """"""
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onFailed(self, httpStatusCode, request):  # type:(int, Request)->None
         """
         请求失败处理函数（HttpStatusCode!=2xx）.
@@ -350,9 +349,9 @@ class TestBitmexRestApi(RestClient):
         e.errorID = httpStatusCode
         e.errorMsg = request.response.text
         self.gateway.onError(e)
-        print(request.response.text)
+        logger.info(f"{request.response.text}")
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb, request):
         """
         Python内部错误处理：默认行为是仍给excepthook
@@ -370,7 +369,7 @@ class TestBitmexRestApi(RestClient):
 class TestBitmexWebsocketApi(WebsocketClient):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
         super(TestBitmexWebsocketApi, self).__init__()
@@ -378,8 +377,8 @@ class TestBitmexWebsocketApi(WebsocketClient):
         self.gateway = gateway
         self.gatewayName = gateway.gatewayName
 
-        self.apiKey = ''
-        self.apiSecret = ''
+        self.apiKey = 'Pyp72M6uaCQ2i_J5Tg8U2BPB'
+        self.apiSecret = 'Um1-ILvaBRTCS3ZWIj-oG4v4SkBIqRpHBMXaJ-qvJbzQC40n'
 
         self.callbackDict = {
             'trade': self.onTick,
@@ -396,7 +395,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
         self.orderDict = {}
         self.tradeSet = set()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self, apiKey, apiSecret, symbols, testnet):
         """"""
         self.apiKey = apiKey
@@ -412,7 +411,8 @@ class TestBitmexWebsocketApi(WebsocketClient):
         for symbol in symbols:
             self.subscribeMarketData(symbol)
 
-    #----------------------------------------------------------------------
+            # ----------------------------------------------------------------------
+
     def subscribeMarketData(self, symbol):
         """订阅行情"""
         tick = VtTickData()
@@ -422,23 +422,25 @@ class TestBitmexWebsocketApi(WebsocketClient):
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
         self.tickDict[symbol] = tick
 
-    #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+
     def onConnected(self):
         """连接回调"""
         self.writeLog(u'Websocket API连接成功')
         self.authenticate()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onDisconnected(self):
         """连接回调"""
         self.writeLog(u'Websocket API连接断开')
         self.authenticate()
 
-    #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+
     def onPacket(self, packet):
         """数据回调"""
         if 'error' in packet:
-            self.writeLog(u'Websocket API报错：%s' %packet['error'])
+            self.writeLog(u'Websocket API报错：%s' % packet['error'])
 
             if 'not valid' in packet['error']:
                 self.active = False
@@ -462,7 +464,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
             else:
                 callback(packet['data'])
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb):
         """Python错误回调"""
         e = VtErrorData()
@@ -473,7 +475,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
 
         sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
         log = VtLogData()
@@ -481,14 +483,16 @@ class TestBitmexWebsocketApi(WebsocketClient):
         log.logContent = content
         self.gateway.onLog(log)
 
-    #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+
     def authenticate(self):
         """"""
         expires = int(time.time())
         method = 'GET'
         path = '/realtime'
         msg = method + path + str(expires)
-        signature = hmac.new(self.apiSecret.encode(), msg.encode("utf-8"), digestmod=hashlib.sha256).hexdigest()
+        self.apiSecret = self.apiSecret
+        signature = hmac.new(self.apiSecret.encode(), msg.encode(), digestmod=hashlib.sha256).hexdigest()
 
         req = {
             'op': 'authKey',
@@ -496,7 +500,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
         }
         self.sendPacket(req)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe(self):
         """"""
         req = {
@@ -505,7 +509,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
         }
         self.sendPacket(req)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onTick(self, d):
         """"""
         symbol = d['symbol']
@@ -523,7 +527,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
         tick = copy(tick)
         self.gateway.onTick(tick)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onDepth(self, d):
         """"""
         symbol = d['symbol']
@@ -533,13 +537,13 @@ class TestBitmexWebsocketApi(WebsocketClient):
 
         for n, buf in enumerate(d['bids'][:5]):
             price, volume = buf
-            tick.__setattr__('bidPrice%s' %(n+1), price)
-            tick.__setattr__('bidVolume%s' %(n+1), volume)
+            tick.__setattr__('bidPrice%s' % (n + 1), price)
+            tick.__setattr__('bidVolume%s' % (n + 1), volume)
 
         for n, buf in enumerate(d['asks'][:5]):
             price, volume = buf
-            tick.__setattr__('askPrice%s' %(n+1), price)
-            tick.__setattr__('askVolume%s' %(n+1), volume)
+            tick.__setattr__('askPrice%s' % (n + 1), price)
+            tick.__setattr__('askVolume%s' % (n + 1), volume)
 
         date, time = str(d['timestamp']).split('T')
         tick.date = date.replace('-', '')
@@ -548,7 +552,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
         tick = copy(tick)
         self.gateway.onTick(tick)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onTrade(self, d):
         """"""
         if not d['lastQty']:
@@ -587,7 +591,7 @@ class TestBitmexWebsocketApi(WebsocketClient):
 
         self.gateway.onTrade(trade)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onOrder(self, d):
         """"""
         if 'ordStatus' not in d:
@@ -626,7 +630,8 @@ class TestBitmexWebsocketApi(WebsocketClient):
 
         self.gateway.onOrder(order)
 
-    #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+
     def onPosition(self, d):
         """"""
         pos = VtPositionData()
@@ -639,11 +644,12 @@ class TestBitmexWebsocketApi(WebsocketClient):
         pos.direction = DIRECTION_NET
         pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
         pos.position = d['currentQty']
-        pos.frozen = 0      # 期货没有冻结概念，会直接反向开仓
+        pos.frozen = 0  # 期货没有冻结概念，会直接反向开仓
 
         self.gateway.onPosition(pos)
 
-    #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+
     def onAccount(self, d):
         """"""
         accoundID = str(d['account'])
@@ -666,7 +672,8 @@ class TestBitmexWebsocketApi(WebsocketClient):
 
         self.gateway.onAccount(account)
 
-    #----------------------------------------------------------------------
+        # ----------------------------------------------------------------------
+
     def onContract(self, d):
         """"""
         if 'tickSize' not in d:
@@ -685,8 +692,9 @@ class TestBitmexWebsocketApi(WebsocketClient):
 
         self.gateway.onContract(contract)
 
+    # ----------------------------------------------------------------------
 
-#----------------------------------------------------------------------
+
 def printDict(d):
     """"""
     print('-' * 30)
@@ -695,5 +703,3 @@ def printDict(d):
     for k in l:
         print(k, d[k])
 
-if __name__ == '__main__':
-    obj = TestBitmexRestApi()

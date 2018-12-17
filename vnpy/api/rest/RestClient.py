@@ -40,7 +40,7 @@ class Request(object):
         self.extra = None  # type: Any
 
         self.response = None  # type: requests.Response
-        self.status = RequestStatus.ready # type: RequestStatus
+        self.status = RequestStatus.ready   # type: RequestStatus
 
     #----------------------------------------------------------------------
     def __str__(self):
@@ -104,7 +104,7 @@ class RestClient(object):
         self._active = True
         self._pool = Pool(n)
         self._pool.apply_async(self._run)
-    
+
     #----------------------------------------------------------------------
     def stop(self):
         """
@@ -148,8 +148,12 @@ class RestClient(object):
         :param extra: 返回值的extra字段会被设置为这个值。当然，你也可以在函数调用之后再设置这个字段。
         :return: Request
         """
+        headers = {
+            "cookie": "u=s%3A575e016a-2743-458c-83a1-46a14c33c230.tc83UxpddZ9u3keOBdIUUD9QWBIyqYx5HOY1privCqk; ls=s%3A1.iRYoszp6DdFM6GrGvce7RDZzQY0LytKwsO2Ptr7cSp0; connect.sid=s%3A6QFhEhk_zDdmkd6WOTAt8QUNxnYr8O4i.cFmaGUhj%2Ferzh0hzhUKt7qHpbVLjsEut%2BldjdsyuaYU",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36",
+        }
 
-        request = Request(method, path, params, data, headers, callback)
+        request = Request(method, path, params, data, headers=headers, callback=callback)
         request.extra = extra
         request.onFailed = onFailed
         request.onError = onError
@@ -235,6 +239,8 @@ class RestClient(object):
             request = self.sign(request)
     
             url = self.makeFullUrl(request.path)
+            print("请求信息")
+            print(url, request.method, request.headers, request.params, request.data)
     
             response = session.request(request.method,
                                        url,

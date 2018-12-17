@@ -1,7 +1,7 @@
 {
 	"exchange": "hadax",
-	"accessKey": "请在火币申请",
-	"secretKey": "请在火币申请",
+	"accessKey": "b1afc338-fef2b407-98494a91-0e3b9",
+	"secretKey": "f8be7d5e-d1691d25-0f78e05f-be0b8",
 	"symbols": ["aaceth"],
 	"proxyHost": "127.0.0.1",
 	"proxyPort": 1080
