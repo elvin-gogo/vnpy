@@ -4,9 +4,10 @@
 import numpy as np
 import talib
 
+from commen.logg import get_logger
 from vnpy.trader.vtObject import VtBarData
 
-
+logger = get_logger()
 ########################################################################
 class BarGenerator(object):
     """
@@ -45,11 +46,11 @@ class BarGenerator(object):
             
             # 推送已经结束的上一分钟K线
             self.onBar(self.bar)
-            
+
             # 创建新的K线对象
             self.bar = VtBarData()
             newMinute = True
-            
+
         # 初始化新一分钟的K线数据
         if newMinute:
             self.bar.vtSymbol = tick.vtSymbol
@@ -75,6 +76,9 @@ class BarGenerator(object):
             
         # 缓存Tick
         self.lastTick = tick
+        print(self.bar.high, self.bar.low, self.bar.open, self.bar.close)
+        # logger.info(f"{tick.lastPrice}")
+        # logger.info(f"{self.bar.high, self.bar.low, self.bar.open, self.bar.close}")
 
     #----------------------------------------------------------------------
     def updateBar(self, bar):
@@ -101,7 +105,7 @@ class BarGenerator(object):
         self.xminBar.close = bar.close        
         self.xminBar.openInterest = bar.openInterest
         self.xminBar.volume += int(bar.volume)                
-            
+
         # X分钟已经走完
         if not (bar.datetime.minute + 1) % self.xmin:   # 可以用X整除
             # 生成上一X分钟K线的时间戳
@@ -114,8 +118,10 @@ class BarGenerator(object):
             
             # 清空老K线缓存对象
             self.xminBar = None
-
+        print("*" * 20)
+        print(self.bar.high, self.bar.low, self.bar.open, self.bar.close)
     #----------------------------------------------------------------------
+
     def generate(self):
         """手动强制立即完成K线合成"""
         self.onBar(self.bar)
@@ -148,6 +154,7 @@ class ArrayManager(object):
     def updateBar(self, bar):
         """更新K线"""
         self.count += 1
+        print(f"count: {self.count}")
         if not self.inited and self.count >= self.size:
             self.inited = True
         

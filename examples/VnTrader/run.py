@@ -18,11 +18,6 @@ except AttributeError:
 import platform
 system = platform.system()
 
-from vnpy.trader.gateway import (huobiGateway, okexGateway, okexfGateway,
-                                 binanceGateway, bitfinexGateway,
-                                 bitmexGateway, fcoinGateway,
-                                 bigoneGateway, lbankGateway,
-                                 coinbaseGateway, ccxtGateway, test_bitmexGateway)
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
@@ -30,7 +25,7 @@ from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-# from vnpy.trader.gateway import (ctpGateway, ibGateway)
+from vnpy.trader.gateway import (ctpGateway, ibGateway)
 
 if system == 'Linux':
     from vnpy.trader.gateway import xtpGateway
@@ -40,7 +35,7 @@ elif system == 'Windows':
 
 # 加载上层应用
 from vnpy.trader.app import (riskManager, ctaStrategy,
-                             spreadTrading, algoTrading, arbitrageStrategy)
+                             spreadTrading, algoTrading)
 
 
 #----------------------------------------------------------------------
@@ -56,33 +51,20 @@ def main():
     me = MainEngine(ee)
 
     # 添加交易接口
-    # me.addGateway(ctpGateway)
-    # me.addGateway(ibGateway)
-    me.addGateway(okexfGateway)
-    me.addGateway(ccxtGateway)
-    me.addGateway(coinbaseGateway)
-    me.addGateway(lbankGateway)
-    me.addGateway(bigoneGateway)
-    me.addGateway(fcoinGateway)
-    me.addGateway(bitmexGateway)
-    me.addGateway(test_bitmexGateway)
-    me.addGateway(huobiGateway)
-    me.addGateway(okexGateway)
-    me.addGateway(binanceGateway)
+    me.addGateway(ctpGateway)
+    me.addGateway(ibGateway)
 
-    me.addGateway(bitfinexGateway)
-    # if system == 'Windows':
-    #     me.addGateway(femasGateway)
-    #     me.addGateway(xspeedGateway)
-    #     me.addGateway(secGateway)
-    #
-    # if system == 'Linux':
-    #     me.addGateway(xtpGateway)
+    if system == 'Windows':
+        me.addGateway(femasGateway)
+        me.addGateway(xspeedGateway)
+        me.addGateway(secGateway)
+
+    if system == 'Linux':
+        me.addGateway(xtpGateway)
 
     # 添加上层应用
-    # me.addApp(ctaStrategy)
     me.addApp(riskManager)
-    me.addApp(arbitrageStrategy)
+    me.addApp(ctaStrategy)
     me.addApp(spreadTrading)
     me.addApp(algoTrading)
 

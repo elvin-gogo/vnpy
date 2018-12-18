@@ -5,29 +5,53 @@ try:
     reload         # Python 2
 except NameError:  # Python 3
     from importlib import reload
+
 import sys
 reload(sys)
-# sys.setdefaultencoding('utf8')
 
-# vn.trader模块
-from vnpy.event import EventEngine
-from vnpy.trader.vtEngine import MainEngine, EventEngine2
-from vnpy.trader.uiQt import createQApp
+try:
+    sys.setdefaultencoding('utf8')
+except AttributeError:
+    pass
 
-# 加载底层接口
+# 判断操作系统
+import platform
+system = platform.system()
+
 from vnpy.trader.gateway import (huobiGateway, okexGateway, okexfGateway,
                                  binanceGateway, bitfinexGateway,
                                  bitmexGateway, fcoinGateway,
                                  bigoneGateway, lbankGateway,
                                  coinbaseGateway, ccxtGateway, test_bitmexGateway)
+# vn.trader模块
+from vnpy.event import EventEngine
+from vnpy.trader.vtEngine import MainEngine, EventEngine2
+from vnpy.trader.uiQt import createQApp
 
-# 加载上层应用
-from vnpy.trader.app import (algoTrading)
-
-# 当前目录组件
+# 倒入不同的mainwindow界面不同
+# from vnpy.trader.uiMainWindow import MainWindow
 from examples.CryptoTrader.uiCryptoWindow import MainWindow
 
-# from uiCryptoWindow import MainWindow
+
+# 加载底层接口
+# from vnpy.trader.gateway import (ctpGateway, ibGateway)
+
+if system == 'Linux':
+    from vnpy.trader.gateway import xtpGateway
+elif system == 'Windows':
+    from vnpy.trader.gateway import (femasGateway, xspeedGateway,
+                                     secGateway)
+
+# 加载上层应用
+from vnpy.trader.app import (riskManager, ctaStrategy,
+                             spreadTrading, algoTrading, arbitrageStrategy)
+
+
+
+# 加载上层应用
+
+# 当前目录组件
+
 
 #----------------------------------------------------------------------
 def main():
@@ -42,6 +66,8 @@ def main():
     me = MainEngine(ee)
 
     # 添加交易接口
+    # me.addGateway(ctpGateway)
+    # me.addGateway(ibGateway)
     me.addGateway(okexfGateway)
     me.addGateway(ccxtGateway)
     me.addGateway(coinbaseGateway)
@@ -53,10 +79,22 @@ def main():
     me.addGateway(huobiGateway)
     me.addGateway(okexGateway)
     me.addGateway(binanceGateway)
+
     me.addGateway(bitfinexGateway)
+    # if system == 'Windows':
+    #     me.addGateway(femasGateway)
+    #     me.addGateway(xspeedGateway)
+    #     me.addGateway(secGateway)
+    #
+    # if system == 'Linux':
+    #     me.addGateway(xtpGateway)
 
     # 添加上层应用
-    me.addApp(algoTrading)
+    me.addApp(ctaStrategy)
+    me.addApp(riskManager)          # 风险
+    # me.addApp(arbitrageStrategy)    # 套利策略
+    me.addApp(spreadTrading)        # 价差交易
+    me.addApp(algoTrading)          # 算法交易
 
     # 创建主窗口
     mw = MainWindow(me, ee)

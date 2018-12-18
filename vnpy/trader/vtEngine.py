@@ -100,8 +100,6 @@ class MainEngine(object):
         
     #----------------------------------------------------------------------
     def getGateway(self, gatewayName):
-        print("*-" * 20)
-        print(gatewayName)
         """获取接口"""
         if gatewayName in self.gatewayDict:
             return self.gatewayDict[gatewayName]
@@ -152,6 +150,7 @@ class MainEngine(object):
             gateway.cancelOrder(cancelOrderReq)   
   
     #----------------------------------------------------------------------
+
     def qryAccount(self, gatewayName):
         """查询特定接口的账户"""
         gateway = self.getGateway(gatewayName)
@@ -160,6 +159,7 @@ class MainEngine(object):
             gateway.qryAccount()      
         
     #----------------------------------------------------------------------
+
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
         gateway = self.getGateway(gatewayName)
@@ -195,6 +195,7 @@ class MainEngine(object):
         self.eventEngine.put(event)        
     
     #----------------------------------------------------------------------
+
     def dbConnect(self):
         """连接MongoDB数据库"""
         if not self.dbClient:
@@ -256,6 +257,7 @@ class MainEngine(object):
             self.writeLog(text.DATA_UPDATE_FAILED)   
     
     #----------------------------------------------------------------------
+
     def dbDelete(self, dbName, collectionName, flt):
         """从数据库中删除数据，flt是过滤条件"""
         if self.dbClient:
@@ -266,6 +268,7 @@ class MainEngine(object):
             self.writeLog(text.DATA_DELETE_FAILED)          
             
     #----------------------------------------------------------------------
+
     def dbLogging(self, event):
         """向MongoDB中插入日志"""
         log = event.dict_['data']
@@ -282,6 +285,7 @@ class MainEngine(object):
         return self.dataEngine.getTick(vtSymbol)          
     
     #----------------------------------------------------------------------
+
     def getContract(self, vtSymbol):
         """查询合约"""
         return self.dataEngine.getContract(vtSymbol)
@@ -317,6 +321,7 @@ class MainEngine(object):
         return self.dataEngine.getAllTrades()    
     
     #----------------------------------------------------------------------
+
     def getAllAccounts(self):
         """查询所有账户"""
         return self.dataEngine.getAllAccounts()

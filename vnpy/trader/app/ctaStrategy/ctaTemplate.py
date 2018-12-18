@@ -91,6 +91,7 @@ class CtaTemplate(object):
     
     #----------------------------------------------------------------------
     def onBar(self, bar):
+        print(bar)
         """收到Bar推送（必须由用户继承实现）"""
         raise NotImplementedError
     

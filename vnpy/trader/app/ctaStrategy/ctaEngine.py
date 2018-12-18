@@ -566,7 +566,7 @@ class CtaEngine(AppEngine):
     def putStrategyEvent(self, name):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         strategy = self.strategyDict[name]
-        d = {k:strategy.__getattribute__(k) for k in strategy.varList}
+        d = {k: strategy.__getattribute__(k) for k in strategy.varList}
         
         event = Event(EVENT_CTA_STRATEGY+name)
         event.dict_['data'] = d

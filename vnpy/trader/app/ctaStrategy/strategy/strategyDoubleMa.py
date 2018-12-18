@@ -6,11 +6,14 @@
 
 from __future__ import division
 
+import random
+
+from commen.logg import get_logger
 from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
                                                      BarGenerator,
                                                      ArrayManager)
-
+logger = get_logger()
 
 ########################################################################
 class DoubleMaStrategy(CtaTemplate):
@@ -94,41 +97,44 @@ class DoubleMaStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
+        print("OnBar-------------------------------------------------------")
         am = self.am        
         am.updateBar(bar)
+        print(am.inited)
         if not am.inited:
             return
-        
+
         # 计算快慢均线
         fastMa = am.sma(self.fastWindow, array=True)
         self.fastMa0 = fastMa[-1]
         self.fastMa1 = fastMa[-2]
-        
+
         slowMa = am.sma(self.slowWindow, array=True)
         self.slowMa0 = slowMa[-1]
         self.slowMa1 = slowMa[-2]
 
         # 判断买卖
-        crossOver = self.fastMa0>self.slowMa0 and self.fastMa1<self.slowMa1     # 金叉上穿
-        crossBelow = self.fastMa0<self.slowMa0 and self.fastMa1>self.slowMa1    # 死叉下穿
-        
+        crossOver = self.fastMa0 > self.slowMa0 and self.fastMa1 < self.slowMa1     # 金叉上穿
+        crossBelow = self.fastMa0 < self.slowMa0 and self.fastMa1 > self.slowMa1    # 死叉下穿
+
+
         # 金叉和死叉的条件是互斥
         # 所有的委托均以K线收盘价委托（这里有一个实盘中无法成交的风险，考虑添加对模拟市价单类型的支持）
         if crossOver:
             # 如果金叉时手头没有持仓，则直接做多
             if self.pos == 0:
-                self.buy(bar.close, 1)
+                self.buy(bar.close, 100)
             # 如果有空头持仓，则先平空，再做多
             elif self.pos < 0:
-                self.cover(bar.close, 1)
-                self.buy(bar.close, 1)
+                self.cover(bar.close, 100)
+                self.buy(bar.close, 100)
         # 死叉和金叉相反
         elif crossBelow:
             if self.pos == 0:
-                self.short(bar.close, 1)
+                self.short(bar.close, 100)
             elif self.pos > 0:
-                self.sell(bar.close, 1)
-                self.short(bar.close, 1)
+                self.sell(bar.close, 100)
+                self.short(bar.close, 100)
                 
         # 发出状态更新事件
         self.putEvent()

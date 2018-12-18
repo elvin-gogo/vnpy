@@ -3,7 +3,7 @@
 '''
 CTA模块相关的GUI控制组件
 '''
-
+from numpy import unicode
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *

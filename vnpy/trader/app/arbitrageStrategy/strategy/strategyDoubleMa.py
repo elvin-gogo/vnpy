@@ -109,8 +109,8 @@ class DoubleMaStrategy(CtaTemplate):
         self.slowMa1 = slowMa[-2]
 
         # 判断买卖
-        crossOver = self.fastMa0>self.slowMa0 and self.fastMa1<self.slowMa1     # 金叉上穿
-        crossBelow = self.fastMa0<self.slowMa0 and self.fastMa1>self.slowMa1    # 死叉下穿
+        crossOver = self.fastMa0 > self.slowMa0 and self.fastMa1 < self.slowMa1     # 金叉上穿
+        crossBelow = self.fastMa0 < self.slowMa0 and self.fastMa1 > self.slowMa1    # 死叉下穿
         
         # 金叉和死叉的条件是互斥
         # 所有的委托均以K线收盘价委托（这里有一个实盘中无法成交的风险，考虑添加对模拟市价单类型的支持）
