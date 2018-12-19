@@ -204,8 +204,10 @@ class CtaEngine(AppEngine):
             so.status = STOPORDER_CANCELLED
             
             # 从活动停止单字典中移除
-            del self.workingStopOrderDict[stopOrderID]
-            
+            self.workingStopOrderDict = {k: v for k, v in self.workingStopOrderDict.items() if k != so.stopOrderID}
+
+            # del self.workingStopOrderDict[stopOrderID]
+
             # 从策略委托号集合中移除
             s = self.strategyOrderDict[strategy.name]
             if stopOrderID in s:
@@ -224,13 +226,13 @@ class CtaEngine(AppEngine):
             # 遍历等待中的停止单，检查是否会被触发
             for so in self.workingStopOrderDict.values():
                 if so.vtSymbol == vtSymbol:
-                    longTriggered = so.direction==DIRECTION_LONG and tick.lastPrice>=so.price        # 多头停止单被触发
-                    shortTriggered = so.direction==DIRECTION_SHORT and tick.lastPrice<=so.price     # 空头停止单被触发
+                    longTriggered = so.direction == DIRECTION_LONG and tick.lastPrice >= so.price        # 多头停止单被触发
+                    shortTriggered = so.direction == DIRECTION_SHORT and tick.lastPrice <= so.price     # 空头停止单被触发
                     
                     if longTriggered or shortTriggered:
                         # 买入和卖出分别以涨停跌停价发单（模拟市价单）
                         # 对于没有涨跌停价格的市场则使用5档报价
-                        if so.direction==DIRECTION_LONG:
+                        if so.direction == DIRECTION_LONG:
                             if tick.upperLimit:
                                 price = tick.upperLimit
                             else:
@@ -248,8 +250,10 @@ class CtaEngine(AppEngine):
                         # 检查因为风控流控等原因导致的委托失败（无委托号）
                         if vtOrderID:
                             # 从活动停止单字典中移除该停止单
-                            del self.workingStopOrderDict[so.stopOrderID]
-                            
+                            # del self.workingStopOrderDict[so.stopOrderID]
+                            self.workingStopOrderDict = {k: v for k, v in self.workingStopOrderDict.items() if
+                                                         k != so.stopOrderID}
+
                             # 从策略委托号集合中移除
                             s = self.strategyOrderDict[so.strategy.name]
                             if so.stopOrderID in s:
@@ -345,7 +349,7 @@ class CtaEngine(AppEngine):
         """从数据库中读取Bar数据，startDate是datetime对象"""
         startDate = self.today - timedelta(days)
         
-        d = {'datetime':{'$gte':startDate}}
+        d = {'datetime': {'$gte': startDate}}
         barData = self.mainEngine.dbQuery(dbName, collectionName, d, 'datetime')
         
         l = []
