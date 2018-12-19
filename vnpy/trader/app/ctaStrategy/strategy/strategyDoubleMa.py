@@ -97,8 +97,7 @@ class DoubleMaStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        print("OnBar-------------------------------------------------------")
-        am = self.am        
+        am = self.am
         am.updateBar(bar)
         print(am.inited)
         if not am.inited:

@@ -15,5 +15,16 @@
         "name": "king keltner",
         "className": "KkStrategy",
         "vtSymbol": "XBTUSD.TESTBITMEX"
+    },
+        {
+        "name": "test strategy",
+        "className": "TestStrategy",
+        "vtSymbol": "XBTUSD.TESTBITMEX"
+    },
+        {
+        "name": "Turtle strategy",
+        "className": "TurtleTradingStrategy",
+        "vtSymbol": "XBTUSD.TESTBITMEX"
     }
+
 ]

@@ -118,8 +118,6 @@ class BarGenerator(object):
             
             # 清空老K线缓存对象
             self.xminBar = None
-        print("*" * 20)
-        print(self.bar.high, self.bar.low, self.bar.open, self.bar.close)
     #----------------------------------------------------------------------
 
     def generate(self):
@@ -207,7 +205,7 @@ class ArrayManager(object):
         if array:
             return result
         return result[-1]
-        
+
     #----------------------------------------------------------------------
     def std(self, n, array=False):
         """标准差"""
