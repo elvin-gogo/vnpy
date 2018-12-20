@@ -3,9 +3,12 @@
 '''
 本文件包含了CTA引擎中的策略开发用模板，开发策略时需要继承CtaTemplate类。
 '''
-import datetime
+import time
 
-from tests import ccxt
+import datetime
+import pandas as pd
+
+import ccxt
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtUtility import BarGenerator, ArrayManager
@@ -170,42 +173,75 @@ class CtaTemplate(object):
         return self.ctaEngine.loadTick(self.tickDbName, self.vtSymbol, days)
 
     def get(self, exchange_name):
-        return ccxt.Instance(exchange_name)
+        """
+        获取客户端
+        :param exchange_name:
+        :return:
+        """
+        c = getattr(ccxt, exchange_name)()
+        return c
+
+    def fatch_history(self, exchange, symbol, days):
+        client = getattr(ccxt, exchange)()
+        # [[1545294180000, 3845, 3845, 3767, 3767, 93160], [1545294240000, 3767, 3772, 3767, 3771.5, 5169]],
+        lst = []
+
+        now = time.time()
+        last = now - 86400 * days
+        # 2017 - 01 - 02  00: 00:00.000
+        now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
+        last = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last))
+        date_list = pd.date_range(start=last, end=now, freq="8H")
+        for date in date_list:
+            date = str(date)
+            a = int(time.mktime(time.strptime(date, '%Y-%m-%d %H:%M:%S')) * 1000)
+
+            try:
+                # res = self.client.fetch_ohlcv(self.symbol, "1m", limit=10)
+                res = client.fetch_ohlcv(symbol, "1m", since=a, limit=480, params={"reverse": True})
+                for k in res:
+                    bar = VtBarData()
+                    bar.symbol, bar.exchange = self.vtSymbol.split(".")
+                    bar.vtSymbol = self.vtSymbol  # vt系统代码
+
+                    bar.open = k[1]  # OHLC
+                    bar.high = k[2]
+                    bar.low = k[3]
+                    bar.close = k[4]
+
+                    timestamp = k[0] / 1000
+                    bar.date = datetime.datetime.fromtimestamp(timestamp).date()  # bar开始的时间，日期
+                    bar.time = datetime.datetime.fromtimestamp(timestamp).time()  # bar开始的时间，时间
+                    bar.datetime = datetime.datetime.fromtimestamp(timestamp)  # python的datetime时间对象
+
+                    bar.volume = k[5]  # 成交量
+                    bar.openInterest = None  # 持仓量
+                    bar.interval = "1m"  # K线周期
+                    lst.append(bar)
+            except:
+                pass
+        return lst
+
+
     
     #----------------------------------------------------------------------
     def loadBar(self, days):
         """读取bar数据"""
         # symbol, exchange = self.vtSymbol.split(".")
-        symbol = "XBTUSD"
-        exchange = "bitmex"
+
+        symbol, exchange = self.vtSymbol.split(".")
+        # symbol XBTUSD  exchange TESTBITMEX
+
         if symbol == "XBTUSD":
             symbol = "BTCUSD"
-        client = self.get(exchange)
-        symbol = "BTC/USD"
-        res = client.fetch_ohlcv(symbol, timeframe='1m', since=None, limit=100, params={"reverse": True})
-        # [[1545294180000, 3845, 3845, 3767, 3767, 93160], [1545294240000, 3767, 3772, 3767, 3771.5, 5169]],
-        lst = []
-        for k in res:
-            bar = VtBarData()
-            bar.symbol, bar.exchange = self.vtSymbol.split(".")
-            bar.vtSymbol = self.vtSymbol  # vt系统代码
 
+        if exchange == "TESTBITMEX":
+            exchange = "BITMEX"
 
-            bar.open = k[1]  # OHLC
-            bar.high = k[2]
-            bar.low = k[3]
-            bar.close = k[4]
+        exchange = exchange.lower()
+        symbol = symbol[:3] + "/" + symbol[3:]
+        self.fatch_history(exchange, symbol, days)
 
-            timestamp = k[0] / 1000
-            bar.date = datetime.datetime.fromtimestamp(timestamp).date()    # bar开始的时间，日期
-            bar.time = datetime.datetime.fromtimestamp(timestamp).time()    # bar开始的时间，时间
-            bar.datetime = datetime.datetime.fromtimestamp(timestamp)  # python的datetime时间对象
-
-            bar.volume = k[5]  # 成交量
-            bar.openInterest = None  # 持仓量
-            bar.interval = "1m"  # K线周期
-            lst.append(bar)
-        return lst
 
 
 
