@@ -466,7 +466,7 @@ class ArrayManager(object):
     """
 
     #----------------------------------------------------------------------
-    def __init__(self, size=10):
+    def __init__(self, size=20):
         """Constructor"""
         self.count = 0                      # 缓存计数
         self.size = size                    # 缓存大小

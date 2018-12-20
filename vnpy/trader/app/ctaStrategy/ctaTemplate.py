@@ -8,6 +8,7 @@ from vnpy.trader.vtConstant import *
 from vnpy.trader.vtUtility import BarGenerator, ArrayManager
 
 from .ctaBase import *
+import ccxt
 
 
 ########################################################################
@@ -169,6 +170,10 @@ class CtaTemplate(object):
     #----------------------------------------------------------------------
     def loadBar(self, days):
         """读取bar数据"""
+        symbol, exchange = self.vtSymbol.split(".")
+
+
+
         return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
     
     #----------------------------------------------------------------------

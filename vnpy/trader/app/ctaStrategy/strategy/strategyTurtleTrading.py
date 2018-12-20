@@ -20,8 +20,8 @@ class TurtleTradingStrategy(CtaTemplate):
     author = u'用Python的交易员'
 
     # 策略参数
-    entryWindow = 10                    # 入场通道窗口
-    exitWindow = 7                     # 出场通道窗口
+    entryWindow = 55                    # 入场通道窗口
+    exitWindow = 20                     # 出场通道窗口
     atrWindow = 20                      # 计算ATR波动率的窗口
     initDays = 10                       # 初始化数据所用的天数
     fixedSize = 100                       # 每次交易的数量

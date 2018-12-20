@@ -15,21 +15,20 @@ from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate,
 
 ########################################################################
 class TestStrategy(CtaTemplate):
-    """海龟交易策略"""
+    """Test策略"""
     className = 'TestStrategy'
-    author = u'zc'
+    author = u'ZC'
 
     # 策略参数
-    entryWindow = 20  # 入场通道窗口              20根k线
-    exitWindow = 7  # 出场通道窗口                7  均线
-    
+    entryWindow = 20  # 入场通道窗口
+    exitWindow = 7  # 出场通道窗口
     atrWindow = 20  # 计算ATR波动率的窗口
-    initDays = 10  # 初始化数据所用的天数
+    initDays = 20  # 初始化数据所用的天数
     fixedSize = 100  # 每次交易的数量
 
     # 策略变量
-    entryUp = 0  # 入场通道上轨                   入场上轨
-    entryDown = 0  # 入场通道下轨                 入场下轨
+    entryUp = 0  # 入场通道上轨
+    entryDown = 0  # 入场通道下轨
     exitUp = 0  # 出场通道上轨
     exitDown = 0  # 出场通道下轨
     atrVolatility = 0  # ATR波动率
@@ -105,13 +104,20 @@ class TestStrategy(CtaTemplate):
 
     # ----------------------------------------------------------------------
     def onBar(self, bar):
-        """收到Bar推送（必须由用户继承实现）"""
+        """收到Bar推送（必须由用户继承实现）
+        ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__',
+         '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__',
+         '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__',
+         '__str__', '__subclasshook__', '__weakref__',
+          'close', 'date', 'datetime', 'exchange', 'gatewayName', 'high', 'interval', 'low', 'open', 'openInterest',
+          'rawData', 'symbol', 'time', 'volume', 'vtSymbol']
+        """
         self.bg.updateBar(bar)
-        # ----------------------------------------------------------------------
 
     def onFiveBar(self, bar):
         """收到5分钟K线"""
-
+        print("onFiveBar-----------------------------------------------")
+        # 撤销之前发出的尚未成交的委托（包括限价单和停止单）
         self.cancelAll()
 
         # 保存K线数据
@@ -121,8 +127,11 @@ class TestStrategy(CtaTemplate):
 
         # 计算指标数值
         self.entryUp, self.entryDown = self.am.donchian(self.entryWindow)
-        # 入场上轨下轨
-        self.exitUp = self.exitDown = self.am.sma(self.exitWindow)[-1]
+        print(f"self.entryUp = {self.entryUp} self.entryDown = {self.entryDown}")
+        ma = self.am.sma(self.exitWindow)
+        self.exitUp = ma
+        self.exitDown = ma
+        print(self.pos)
 
         if not self.pos:
             self.atrVolatility = self.am.atr(self.atrWindow)
@@ -158,6 +167,7 @@ class TestStrategy(CtaTemplate):
 
         # 发出状态更新事件
         self.putEvent()
+        # ----------------------------------------------------------------------
 
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
