@@ -3,12 +3,14 @@
 '''
 本文件包含了CTA引擎中的策略开发用模板，开发策略时需要继承CtaTemplate类。
 '''
+import datetime
 
+from tests import ccxt
 from vnpy.trader.vtConstant import *
+from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtUtility import BarGenerator, ArrayManager
 
 from .ctaBase import *
-import ccxt
 
 
 ########################################################################
@@ -166,15 +168,52 @@ class CtaTemplate(object):
     def loadTick(self, days):
         """读取tick数据"""
         return self.ctaEngine.loadTick(self.tickDbName, self.vtSymbol, days)
+
+    def get(self, exchange_name):
+        return ccxt.Instance(exchange_name)
     
     #----------------------------------------------------------------------
     def loadBar(self, days):
         """读取bar数据"""
-        symbol, exchange = self.vtSymbol.split(".")
+        # symbol, exchange = self.vtSymbol.split(".")
+        symbol = "XBTUSD"
+        exchange = "bitmex"
+        if symbol == "XBTUSD":
+            symbol = "BTCUSD"
+        client = self.get(exchange)
+        symbol = "BTC/USD"
+        res = client.fetch_ohlcv(symbol, timeframe='1m', since=None, limit=100, params={"reverse": True})
+        # [[1545294180000, 3845, 3845, 3767, 3767, 93160], [1545294240000, 3767, 3772, 3767, 3771.5, 5169]],
+        lst = []
+        for k in res:
+            bar = VtBarData()
+            bar.symbol, bar.exchange = self.vtSymbol.split(".")
+            bar.vtSymbol = self.vtSymbol  # vt系统代码
+
+
+            bar.open = k[1]  # OHLC
+            bar.high = k[2]
+            bar.low = k[3]
+            bar.close = k[4]
+
+            timestamp = k[0] / 1000
+            bar.date = datetime.datetime.fromtimestamp(timestamp).date()    # bar开始的时间，日期
+            bar.time = datetime.datetime.fromtimestamp(timestamp).time()    # bar开始的时间，时间
+            bar.datetime = datetime.datetime.fromtimestamp(timestamp)  # python的datetime时间对象
+
+            bar.volume = k[5]  # 成交量
+            bar.openInterest = None  # 持仓量
+            bar.interval = "1m"  # K线周期
+            lst.append(bar)
+        return lst
 
 
 
-        return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
+
+
+
+
+        # return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
     
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
