@@ -42,6 +42,8 @@ Release/
 *.vt
 *.log
 *.bak
+*.json
+
 
 # 编译临时文件夹
 build/
