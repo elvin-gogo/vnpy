@@ -44,7 +44,7 @@ class BarGenerator(object):
             self.bar.date = self.bar.datetime.strftime('%Y%m%d')
             self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
             
-            # 推送已经结束的上一分钟K线
+                # 推送已经结束的上一分钟K线
             self.onBar(self.bar)
 
             # 创建新的K线对象

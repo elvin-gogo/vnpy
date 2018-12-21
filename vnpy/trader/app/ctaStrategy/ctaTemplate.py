@@ -240,7 +240,7 @@ class CtaTemplate(object):
 
         exchange = exchange.lower()
         symbol = symbol[:3] + "/" + symbol[3:]
-        self.fatch_history(exchange, symbol, days)
+        return self.fatch_history(exchange, symbol, days)
 
 
 

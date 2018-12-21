@@ -20,10 +20,10 @@ class TurtleTradingStrategy(CtaTemplate):
     author = u'用Python的交易员'
 
     # 策略参数
-    entryWindow = 55                    # 入场通道窗口
-    exitWindow = 20                     # 出场通道窗口
+    entryWindow = 20                    # 入场通道窗口
+    exitWindow = 7                     # 出场通道窗口
     atrWindow = 20                      # 计算ATR波动率的窗口
-    initDays = 10                       # 初始化数据所用的天数
+    initDays = 1                       # 初始化数据所用的天数
     fixedSize = 100                       # 每次交易的数量
 
     # 策略变量
@@ -70,7 +70,7 @@ class TurtleTradingStrategy(CtaTemplate):
         """Constructor"""
         super(TurtleTradingStrategy, self).__init__(ctaEngine, setting)
         
-        self.bg = BarGenerator(self.onBar)
+        self.bg = BarGenerator(self.onBar, 60, self.onSixtyBar)
         self.am = ArrayManager()
         
     #----------------------------------------------------------------------
@@ -103,7 +103,12 @@ class TurtleTradingStrategy(CtaTemplate):
         self.bg.updateTick(tick)
 
     #----------------------------------------------------------------------
+
     def onBar(self, bar):
+        """收到Bar推送（必须由用户继承实现）"""
+        self.bg.updateBar(bar)
+
+    def onSixtyBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         self.cancelAll()
     
@@ -149,7 +154,8 @@ class TurtleTradingStrategy(CtaTemplate):
         self.saveSyncData()        
     
         # 发出状态更新事件
-        self.putEvent()        
+        self.putEvent()
+
 
     #----------------------------------------------------------------------
     def onOrder(self, order):
